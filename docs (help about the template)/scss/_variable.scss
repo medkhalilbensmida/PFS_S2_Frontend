@@ -1,0 +1,142 @@
+// Custom Variables
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap");
+
+// Bootstrap overrides
+
+/**
+ * Table Of Content
+ *
+ * 	1. Color system
+ *	2. Options
+ *	3. Body
+ *	4. Typography
+ *	5. Breadcrumbs
+ *	6. Cards
+ *	7. Dropdowns
+ *	8. Buttons
+ *	9. Typography
+ *	10. Progress bars
+ *	11. Tables
+ *	12. Forms
+ *	14. Component
+ */
+
+//
+// Color system
+//
+
+$white: #fff !default;
+$gray-100: #f6f7f9 !default;
+$gray-200: #eff4fa !default;
+$gray-300: #dfe5ef !default;
+$gray-400: #7c8fac !default;
+$gray-500: #5a6a85 !default;
+$gray-600: #29343d !default;
+$black: #000 !default;
+
+$blue: #5d87ff !default;
+$indigo: #6610f2 !default;
+$purple: #6f42c1 !default;
+$pink: #d63384 !default;
+$red: #ff6692 !default;
+$orange: #fd7e14 !default;
+$yellow: #f8c20a !default;
+$green: #36c76c !default;
+$teal: #20c997 !default;
+$cyan: #539bff !default;
+
+// Main Colors
+$primary: #635bff !default;
+$secondary: #16cdc7 !default;
+$success: #36c76c !default;
+$info: #46caeb !default;
+$warning: $yellow !default;
+$danger: $red !default;
+$light: $gray-200 !default;
+$muted: #526b7a !default;
+$dark: #0a2540 !default;
+$dark-light: #29343d !default;
+$light-gray: $gray-100 !default;
+
+// Theme Colorss
+$theme-colors: (
+  "primary": $primary,
+  "secondary": $secondary,
+  "success": $success,
+  "info": $info,
+  "warning": $warning,
+  "danger": $danger,
+  "light": $light,
+  "dark": $dark,
+  "muted": $muted,
+  "indigo": $indigo,
+) !default;
+
+// Quickly modify global styling by enabling or disabling optional features.
+// Settings for the `<body>` element.
+
+$body-bg: $white;
+$body-color: #11142d !default;
+$grid-gutter-width: 20px !default;
+
+// Typography
+//
+// Font, line-height, and color for body text, headings, and more.
+
+$font-size-base: 0.875rem;
+$font-family-sans-serif: "Manrope", sans-serif !default;
+$font-weight-light: 300 !default;
+$font-weight-normal: 400 !default;
+$font-weight-medium: 500 !default;
+$font-weight-bold: 700 !default;
+
+$h1-font-size: 36px !default;
+$h2-font-size: 30px !default;
+$h3-font-size: 24px !default;
+$h4-font-size: 18px !default;
+$h5-font-size: 16px !default;
+$h6-font-size: 14px !default;
+
+// Heading
+$headings-color: #29343d !default;
+$headings-font-weight: 600 !default;
+
+// Buttons
+$btn-secondary-border: $gray-300;
+
+// Border Radius
+$border-radius: 12px !default;
+$border-radius-sm: 8px !default;
+$border-radius-lg: 15px !default;
+$border-radius-xl: 18px !default;
+$border-radius-md: 10px !default;
+
+// Define common padding and border radius sizes and more.
+$border-width: 1px !default;
+$border-color: #e5eaef !default;
+
+// Card
+$card-spacer-y: 30px !default;
+$card-spacer-x: 30px !default;
+$card-border-width: 0px !default;
+$card-border-radius: 15px !default;
+$card-title-color: $headings-color !default;
+$card-subtitle-color: #98A4AE !default;
+$card-border-color: #ebf1f6 !default;
+$card-border-radius: $border-radius;
+$card-box-shadow: 0px 2px 4px -1px #afb6c933 !default;
+
+// Common
+$min-contrast-ratio: 1.7 !default;
+
+// Box Shadow
+$box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.12) !default;
+
+// Buttons
+$btn-padding-y: 6px;
+$btn-padding-x: 16px;
+$btn-font-weight: $font-weight-normal;
+$btn-border-radius: 7px;
+
+//offcanvas width
+$offcanvas-horizontal-width: 270px;
