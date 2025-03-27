@@ -1,0 +1,136 @@
+<div class="blank-layout-container justify-content-center align-items-center">
+  <div class="position-relative overflow-hidden auth-bg min-vh-100 h-100 w-100 d-flex align-items-center justify-content-center">
+    <div class="d-flex align-items-center justify-content-center w-100">
+      <div class="row justify-content-center w-100 my-5 my-xl-0">
+        <div class="col-sm-9 d-flex flex-column justify-content-center">
+          <div class="bg-white mb-0 rounded auth-login m-auto w-100 overflow-hidden">
+            <div class="row gx-0">
+              <!-- ------------------------------------------------- -->
+              <!-- Partie Formulaire -->
+              <!-- ------------------------------------------------- -->
+              <div class="col-lg-6 b-r-1 p-r-0">
+                <div class="row justify-content-center p-y-24">
+                  <div class="col-lg-11">
+                    <div class="p-30">
+                      <a [routerLink]="['/']">
+                        <img 
+                          src="./assets/images/logos/logo.svg" 
+                          class="align-middle m-2" 
+                          alt="logo" 
+                        />
+                      </a>
+                      <h4 class="f-w-700 f-s-34 m-t-24 m-b-8">
+                        Accédez à votre compte
+                      </h4>
+
+                      <form 
+                        class="m-t-30" 
+                        [formGroup]="loginForm" 
+                        (ngSubmit)="onSubmit()"
+                      >
+                        <!-- Champ Email -->
+                        <div class="m-b-16">
+                          <mat-form-field 
+                            appearance="outline" 
+                            class="w-100" 
+                            color="primary"
+                          >
+                            <mat-label>Email</mat-label>
+                            <input 
+                              matInput 
+                              formControlName="email" 
+                              type="email" 
+                              required
+                            />
+                            <mat-error *ngIf="f.email?.invalid && (f.email?.dirty || f.email?.touched)">
+                              <span *ngIf="f.email?.errors?.['required']">L'email est requis</span>
+                              <span *ngIf="f.email?.errors?.['email']">Veuillez entrer un email valide</span>
+                            </mat-error>
+                          </mat-form-field>
+                        </div>
+
+                        <!-- Champ Mot de passe -->
+                        <div class="m-b-16">
+                          <mat-form-field 
+                            appearance="outline" 
+                            class="w-100" 
+                            color="primary"
+                          >
+                            <mat-label>Mot de passe</mat-label>
+                            <input 
+                              matInput 
+                              formControlName="password" 
+                              type="password" 
+                              required
+                            />
+                            <mat-error *ngIf="f.password?.invalid && (f.password?.dirty || f.password?.touched)">
+                              <span *ngIf="f.password?.errors?.['required']">Le mot de passe est requis</span>
+                            </mat-error>
+                          </mat-form-field>
+                        </div>
+
+                        <!-- Message d'erreur -->
+                        <div class="error-message m-b-16" *ngIf="errorMessage">
+                          {{ errorMessage }}
+                        </div>
+
+                        <!-- Bouton de soumission -->
+                        <button
+                          mat-flat-button
+                          color="primary"
+                          class="w-100"
+                          type="submit"
+                          [disabled]="loginForm.invalid || isLoading"
+                        >
+                          <span *ngIf="isLoading">Connexion en cours...</span>
+                          <span *ngIf="!isLoading">Se connecter</span>
+                        </button>
+                      </form>
+
+                      <div class="text-center m-t-24">
+                        <span class="d-block f-w-500">
+                          Vous n'avez pas de compte ?
+                          <a 
+                            [routerLink]="['/authentication/register']" 
+                            class="text-decoration-none text-primary f-w-500 f-s-14"
+                          >
+                            Créer un compte
+                          </a>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ------------------------------------------------- -->
+              <!-- Partie Image -->
+              <!-- ------------------------------------------------- -->
+              <div class="col-lg-6 d-none d-lg-block">
+                <div class="row justify-content-center align-items-center h-100">
+                  <div class="col-lg-9">
+                    <div class="d-flex align-items-center justify-content-center w-100 h-100 flex-column gap-9 text-center">
+                      <img 
+                        src="/assets/images/backgrounds/login-side.png" 
+                        alt="login-side-img" 
+                        width="300" 
+                        class="img-fluid" 
+                      />
+                      <h4 class="mb-0 f-s-22 m-y-20">Bienvenue</h4>
+                      <p class="f-s-15 m-b-20 m-t-0 mat-body-1">
+                        Riche en fonctionnalités, facile à utiliser et très utile pour vos études.
+                      </p>
+                      <button mat-flat-button color="primary">
+                        En savoir plus
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

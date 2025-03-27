@@ -1,0 +1,200 @@
+<div class="blank-layout-container justify-content-center align-items-center">
+  <div class="position-relative overflow-hidden auth-bg min-vh-100 h-100 w-100 d-flex align-items-center justify-content-center">
+    <div class="d-flex align-items-center justify-content-center w-100">
+      <div class="row justify-content-center w-100 my-5 my-xl-0">
+        <div class="col-sm-9 d-flex flex-column justify-content-center">
+          <div class="bg-white mb-0 rounded auth-login m-auto w-100 overflow-hidden">
+            <div class="row gx-0">
+              <!-- Partie Formulaire -->
+              <div class="col-lg-6 b-r-1 p-r-0">
+                <div class="row justify-content-center p-y-24">
+                  <div class="col-lg-11">
+                    <div class="p-30">
+                      <a [routerLink]="['/']">
+                        <img src="./assets/images/logos/logo.svg" class="align-middle m-2" alt="logo" />
+                      </a>
+                      
+                      <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="f-w-700 f-s-34 m-t-24 m-b-8">
+                          Créer un compte {{ currentForm === 'admin' ? 'Administrateur' : 'Enseignant' }}
+                        </h4>
+                        <button mat-stroked-button (click)="toggleFormType()" color="primary">
+                          {{ currentForm === 'admin' ? 'Passer à Enseignant' : 'Passer à Admin' }}
+                        </button>
+                      </div>
+
+                      <!-- Formulaire Enseignant -->
+                      <form *ngIf="currentForm === 'enseignant'" [formGroup]="enseignantForm" (ngSubmit)="submitEnseignant()" class="m-t-30">
+                        <div class="row">
+                          <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                              <mat-label>Nom</mat-label>
+                              <input matInput formControlName="nom" required>
+                              <mat-error *ngIf="enseignantForm.get('nom')?.invalid && enseignantForm.get('nom')?.touched">
+                                Le nom est requis
+                              </mat-error>
+                            </mat-form-field>
+                          </div>
+                          <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                              <mat-label>Prénom</mat-label>
+                              <input matInput formControlName="prenom" required>
+                              <mat-error *ngIf="enseignantForm.get('prenom')?.invalid && enseignantForm.get('prenom')?.touched">
+                                Le prénom est requis
+                              </mat-error>
+                            </mat-form-field>
+                          </div>
+                        </div>
+
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Email</mat-label>
+                          <input matInput formControlName="email" type="email" required>
+                          <mat-error *ngIf="enseignantForm.get('email')?.hasError('required')">
+                            L'email est requis
+                          </mat-error>
+                          <mat-error *ngIf="enseignantForm.get('email')?.hasError('email')">
+                            Email invalide
+                          </mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Mot de passe</mat-label>
+                          <input matInput formControlName="motDePasse" type="password" required>
+                          <mat-error *ngIf="enseignantForm.get('motDePasse')?.hasError('required')">
+                            Le mot de passe est requis
+                          </mat-error>
+                          <mat-error *ngIf="enseignantForm.get('motDePasse')?.hasError('minlength')">
+                            Minimum 6 caractères
+                          </mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Téléphone</mat-label>
+                          <input matInput formControlName="telephone" required>
+                          <mat-error *ngIf="enseignantForm.get('telephone')?.invalid && enseignantForm.get('telephone')?.touched">
+                            Le téléphone est requis
+                          </mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Grade</mat-label>
+                          <input matInput formControlName="grade" required>
+                          <mat-error *ngIf="enseignantForm.get('grade')?.invalid && enseignantForm.get('grade')?.touched">
+                            Le grade est requis
+                          </mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Département</mat-label>
+                          <input matInput formControlName="departement" required>
+                          <mat-error *ngIf="enseignantForm.get('departement')?.invalid && enseignantForm.get('departement')?.touched">
+                            Le département est requis
+                          </mat-error>
+                        </mat-form-field>
+
+                        <button mat-flat-button color="primary" class="w-100 mt-3" [disabled]="enseignantForm.invalid">
+                          S'inscrire comme Enseignant
+                        </button>
+                      </form>
+
+                      <!-- Formulaire Admin -->
+                      <form *ngIf="currentForm === 'admin'" [formGroup]="adminForm" (ngSubmit)="submitAdmin()" class="m-t-30">
+                        <div class="row">
+                          <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                              <mat-label>Nom</mat-label>
+                              <input matInput formControlName="nom" required>
+                              <mat-error *ngIf="adminForm.get('nom')?.invalid && adminForm.get('nom')?.touched">
+                                Le nom est requis
+                              </mat-error>
+                            </mat-form-field>
+                          </div>
+                          <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                              <mat-label>Prénom</mat-label>
+                              <input matInput formControlName="prenom" required>
+                              <mat-error *ngIf="adminForm.get('prenom')?.invalid && adminForm.get('prenom')?.touched">
+                                Le prénom est requis
+                              </mat-error>
+                            </mat-form-field>
+                          </div>
+                        </div>
+
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Email</mat-label>
+                          <input matInput formControlName="email" type="email" required>
+                          <mat-error *ngIf="adminForm.get('email')?.hasError('required')">
+                            L'email est requis
+                          </mat-error>
+                          <mat-error *ngIf="adminForm.get('email')?.hasError('email')">
+                            Email invalide
+                          </mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Mot de passe</mat-label>
+                          <input matInput formControlName="motDePasse" type="password" required>
+                          <mat-error *ngIf="adminForm.get('motDePasse')?.hasError('required')">
+                            Le mot de passe est requis
+                          </mat-error>
+                          <mat-error *ngIf="adminForm.get('motDePasse')?.hasError('minlength')">
+                            Minimum 6 caractères
+                          </mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Téléphone</mat-label>
+                          <input matInput formControlName="telephone" required>
+                          <mat-error *ngIf="adminForm.get('telephone')?.invalid && adminForm.get('telephone')?.touched">
+                            Le téléphone est requis
+                          </mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Fonction</mat-label>
+                          <input matInput formControlName="fonction" required>
+                          <mat-error *ngIf="adminForm.get('fonction')?.invalid && adminForm.get('fonction')?.touched">
+                            La fonction est requise
+                          </mat-error>
+                        </mat-form-field>
+
+                        <button mat-flat-button color="primary" class="w-100 mt-3" [disabled]="adminForm.invalid">
+                          S'inscrire comme Administrateur
+                        </button>
+                      </form>
+
+                      <div class="text-center m-t-24" style="margin-top: 24px !important;">
+                        <span class="d-block f-w-500">
+                          Vous avez déjà un compte ?
+                          <a [routerLink]="['/authentication/login']" class="text-decoration-none text-primary f-w-500 f-s-14">
+                            Se connecter
+                          </a>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Partie Image -->
+              <div class="col-lg-6 d-none d-lg-block">
+                <div class="row justify-content-center align-items-center h-100">
+                  <div class="col-lg-9">
+                    <div class="d-flex align-items-center justify-content-center w-100 h-100 flex-column gap-9 text-center">
+                      <img src="/assets/images/backgrounds/login-side.png" alt="login-side-img" width="300" class="img-fluid" />
+                      <h4 class="mb-0 f-s-22 m-y-20">Bienvenue</h4>
+                      <p class="f-s-15 m-b-20 m-t-0 mat-body-1">
+                        Riche en fonctionnalités, facile à utiliser et très utile pour la gestion académique.
+                      </p>
+                      <button mat-flat-button color="primary">En savoir plus</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

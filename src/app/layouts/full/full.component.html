@@ -1,4 +1,5 @@
 <span [dir]="options.dir!">
+  <!-- Conteneur principal -->
   <mat-sidenav-container
     class="mainWrapper"
     autosize
@@ -16,12 +17,11 @@
       cyan_theme: options.activeTheme == 'cyan_theme'
     }"
   >
-    <!-- ============================================================== -->
-    <!-- Vertical Sidebar -->
-    <!-- ============================================================== -->
+    <!-- Sidebar verticale -->
     @if (!options.horizontal) {
     <mat-sidenav
       #leftsidenav
+      position="start"
       [mode]="isOver ? 'over' : 'side'"
       [opened]="
         options.navPos === 'side' &&
@@ -50,12 +50,11 @@
     </mat-sidenav>
     }
 
-    <!-- ============================================================== -->
-    <!-- horizontal Sidebar -->
-    <!-- ============================================================== -->
+    <!-- Sidebar horizontale -->
     @if (resView) {
     <mat-sidenav
-      #leftsidenav
+      #rightsidenav
+      position="end"
       [mode]="'over'"
       [opened]="options.sidenavOpened && !isTablet"
       (openedChange)="onSidenavOpenedChange($event)"
@@ -74,29 +73,15 @@
     </mat-sidenav>
     }
 
-    <!-- ============================================================== -->
-    <!-- Main Content -->
-    <!-- ============================================================== -->
+    <!-- Contenu principal -->
     <mat-sidenav-content class="contentWrapper" #content>
-      <!-- ============================================================== -->
-      <!-- VerticalHeader -->
-      <!-- ============================================================== -->
-      @if (!options.horizontal) {
       <app-header
         [showToggle]="!isOver"
         (toggleCollapsed)="toggleCollapsed()"
         (toggleMobileNav)="sidenav.toggle()"
         (toggleMobileFilterNav)="filterNavRight.toggle()"
       ></app-header>
-      } @else {
-      <!-- horizontal header -->
-      <app-horizontal-header
-        (toggleMobileNav)="sidenav.toggle()"
-        (toggleMobileFilterNav)="filterNavRight.toggle()"
-      ></app-horizontal-header>
-      } @if(options.horizontal) {
-      <app-horizontal-sidebar></app-horizontal-sidebar>
-      }
+
       <div class="body-wrapper">
         <main
           class="pageWrapper"
@@ -105,37 +90,28 @@
           }"
         >
           <app-breadcrumb></app-breadcrumb>
-          <!-- ============================================================== -->
-          <!-- Outlet -->
-          <!-- ============================================================== -->
           <router-outlet></router-outlet>
-          <div class="customizerBtn">
-            <button mat-fab color="warn" (click)="customizerRight.toggle()">
-              <mat-icon>settings</mat-icon>
-            </button>
-          </div>
+
         </main>
       </div>
     </mat-sidenav-content>
 
-    <mat-sidenav #customizerRight mode="over" position="end">
-      <div
-        class="p-x-16 p-y-20 d-flex align-items-center justify-content-between"
-      >
-        <h3 class="mat-subtitle-1 f-s-21 f-w-600">Settings</h3>
-        <button class="d-lg-none" mat-button (click)="customizerRight.toggle()">
-          Close
-        </button>
-      </div>
-      <mat-divider></mat-divider>
-
-      <app-customizer (optionsChange)="receiveOptions($event)"></app-customizer>
-    </mat-sidenav>
+    <!-- Customizer (déplacé en dehors du conteneur principal) -->
   </mat-sidenav-container>
 
-  <!-- ------------------------------------------------------------------
-    Mobile Apps Sidebar
-    ------------------------------------------------------------------ -->
+  <!-- Customizer Sidebar -->
+  <mat-drawer #customizerRight mode="over" position="end" class="customizer-sidebar">
+    <div class="p-x-16 p-y-20 d-flex align-items-center justify-content-between">
+      <h3 class="mat-subtitle-1 f-s-21 f-w-600">Settings</h3>
+      <button class="d-lg-none" mat-button (click)="customizerRight.toggle()">
+        Close
+      </button>
+    </div>
+    <mat-divider></mat-divider>
+    <app-customizer (optionsChange)="receiveOptions($event)"></app-customizer>
+  </mat-drawer>
+
+  <!-- Filtre mobile -->
   <mat-drawer #filterNavRight mode="over" position="end" class="filter-sidebar">
     <div>
       <div class="d-flex justify-content-between align-items-center">
@@ -173,11 +149,8 @@
                 [attr.data-icon]="appdd.icon"
               ></span>
             </span>
-
             <div class="m-l-16">
-              <h5
-                class="f-s-15 f-w-600 m-0 textprimary mat-subtitle-1 hover-text"
-              >
+              <h5 class="f-s-15 f-w-600 m-0 textprimary mat-subtitle-1 hover-text">
                 {{ appdd.title }}
               </h5>
               <span class="mat-body-1 f-s-13">{{ appdd.subtitle }}</span>
@@ -186,7 +159,6 @@
         </div>
         }
       </div>
-     
     </div>
   </mat-drawer>
 </span>

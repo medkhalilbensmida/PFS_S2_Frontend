@@ -217,64 +217,65 @@
   </mat-menu>
 
   <!-- --------------------------------------------------------------- -->
-  <!-- profile Dropdown -->
-  <!-- --------------------------------------------------------------- -->
-  <button
-    mat-fab
-    extended
-    color="inherit"
-    [matMenuTriggerFor]="profilemenu"
-    aria-label="Notifications"
-    class="d-flex justify-content-center profile-btn-dd"
-  >
-  <div class="d-flex align-items-center gap-4">
-    <img
-      src="/assets/images/profile/user-1.jpg"
-      class="rounded-circle object-cover icon-35 profile-dd"
-      width="35"
-    />
+   <!-- profile Dropdown -->
+   <button
+   mat-fab
+   extended
+   color="inherit"
+   [matMenuTriggerFor]="profilemenu"
+   aria-label="Notifications"
+   class="d-flex justify-content-center profile-btn-dd"
+ >
+   <div class="d-flex align-items-center gap-4">
+     <img
+       src="/assets/images/profile/user-1.jpg"
+       class="rounded-circle object-cover icon-35 profile-dd"
+       width="35"
+     />
 
-    <i data-icon="solar:alt-arrow-down-bold" class="iconify f-s-8"></i>
-  </div>
-  </button>
-  <mat-menu #profilemenu="matMenu" class="topbar-dd cardWithShadow">
-    <div class="p-x-32 p-y-16">
-      <div class="d-flex align-items-center p-b-24 b-b-1 m-t-16">
-        <img
-          src="/assets/images/profile/user-1.jpg"
-          class="rounded-circle"
-          width="56"
-        />
-        <div class="m-l-16">
-          <h6
-            class="f-s-14 f-w-600 m-0 mat-subtitle-1 d-flex align-items-center"
-          >
-            David McMichael
-            <span class="f-s-14 d-block text-success m-l-4">Pro</span>
-          </h6>
-          <span> david&#64;wrappixel.com </span>
-        </div>
+     <i data-icon="solar:alt-arrow-down-bold" class="iconify f-s-8"></i>
+   </div>
+ </button>
+ <mat-menu #profilemenu="matMenu" class="topbar-dd cardWithShadow">
+   <div class="p-x-32 p-y-16">
+     <div class="d-flex align-items-center p-b-24 b-b-1 m-t-16">
+       <img
+         src="/assets/images/profile/user-1.jpg"
+         class="rounded-circle"
+         width="56"
+       />
+       <div class="m-l-16">
+         <h6
+           class="f-s-14 f-w-600 m-0 mat-subtitle-1 d-flex align-items-center"
+         >
+           David McMichael
+           <span class="f-s-14 d-block text-success m-l-4">Pro</span>
+         </h6>
+         <span> david&#64;wrappixel.com </span>
+       </div>
+     </div>
+   </div>
+   <div class="p-x-32 p-b-16">
+    @for(profile of profiledd; track profile.id) {
+    <div 
+      class="p-8 text-decoration-none d-block text-hover-primary"
+      [routerLink]="profile.link ? [profile.link] : null"
+      (click)="!profile.link && profile.action ? profile.action() : null"
+      style="cursor: pointer;"
+    >
+      <div class="d-flex align-items-center">
+        <h5 class="f-s-14 f-w-600 m-0 textprimary mat-subtitle-1 hover-text">
+          {{ profile.title }}
+        </h5>
+        @if(profile.new) {
+        <span
+          class="bg-light-error text-error rounded-sm p-x-8 p-y-4 f-w-500 f-s-12 m-l-4"
+          >5</span
+        >
+        }
       </div>
     </div>
-    <div class="p-x-32 p-b-16">
-      @for(profile of profiledd; track profile.title) {
-      <a
-        class="p-8 text-decoration-none d-block text-hover-primary"
-        [routerLink]="[profile.link]"
-      >
-        <div class="d-flex align-items-center">
-          <h5 class="f-s-14 f-w-600 m-0 textprimary mat-subtitle-1 hover-text">
-            {{ profile.title }}
-          </h5>
-          @if(profile.new) {
-          <span
-            class="bg-light-error text-error rounded-sm p-x-8 p-y-4 f-w-500 f-s-12 m-l-4"
-            >5</span
-          >
-          }
-        </div>
-      </a>
-      }
-    </div>
-  </mat-menu>
+    }
+  </div>
+ </mat-menu>
 </mat-toolbar>

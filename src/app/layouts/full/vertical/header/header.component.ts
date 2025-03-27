@@ -1,3 +1,4 @@
+// header.ts
 import {
   Component,
   Output,
@@ -16,6 +17,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { AppSettings } from 'src/app/config';
+import { AuthService } from 'src/app/pages/authentication/services/auth.service';
 
 interface notifications {
   id: number;
@@ -29,8 +31,9 @@ interface notifications {
 interface profiledd {
   id: number;
   title: string;
-  link: string;
+  link?: string;
   new?: boolean;
+  action?: () => void; // Ajouté pour gérer les actions
 }
 
 interface apps {
@@ -99,7 +102,8 @@ export class HeaderComponent {
     private settings: CoreService,
     private vsidenav: CoreService,
     public dialog: MatDialog,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private authService: AuthService // Ajouté
   ) {
     translate.setDefaultLang('en');
   }
@@ -185,13 +189,14 @@ export class HeaderComponent {
     },
     {
       id: 4,
-      title: ' Account Settings',
+      title: 'Account Settings',
       link: '/',
     },
     {
       id: 5,
       title: 'Sign Out',
-      link: '/authentication/login',
+      action: () => this.authService.signOut() // Modifié pour utiliser la méthode signOut
+ 
     },
   ];
 
@@ -274,8 +279,4 @@ export class AppSearchDialogComponent {
   navItems = navItems;
 
   navItemsData = navItems.filter((navitem) => navitem.displayName);
-
-  // filtered = this.navItemsData.find((obj) => {
-  //   return obj.displayName == this.searchinput;
-  // });
 }
