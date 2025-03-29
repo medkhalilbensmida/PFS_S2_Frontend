@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
 import { AuthGuard } from './pages/authentication/guards/auth.guard';
+import { SurveillanceAssignmentComponent } from './components/surveillance-assignment/surveillance-assignment.component';
 
 export const routes: Routes = [
   {
@@ -13,6 +14,17 @@ export const routes: Routes = [
         path: '',
         redirectTo: '/dashboards/dashboard1', // Redirige vers le dashboard par défaut
         pathMatch: 'full',
+      },
+      {
+        path: 'surveillance-assignment',
+        component: SurveillanceAssignmentComponent,
+        data: {
+          title: 'Affectation des Surveillances',
+          urls: [
+            { title: 'Dashboard', url: '/dashboards/dashboard1' },
+            { title: 'Affectation des Surveillances' },
+          ],
+        },
       },
       {
         path: 'starter',

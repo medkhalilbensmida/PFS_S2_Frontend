@@ -7,6 +7,7 @@ import {
   HttpClient,
   provideHttpClient,
   withInterceptorsFromDi,
+  HTTP_INTERCEPTORS,
 } from '@angular/common/http';
 import { routes } from './app.routes';
 import {
@@ -32,11 +33,14 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 
+import { NgxEchartsModule } from 'ngx-echarts';
+
+// Import the existing interceptor provider
+import { AuthInterceptorProvider } from './pages/authentication/interceptors/auth.interceptor';
+
 export function HttpLoaderFactory(http: HttpClient): any {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
-
-import { NgxEchartsModule } from 'ngx-echarts';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -75,5 +79,7 @@ export const appConfig: ApplicationConfig = {
         },
       })
     ),
+    // Register the existing interceptor
+    AuthInterceptorProvider,
   ],
 };

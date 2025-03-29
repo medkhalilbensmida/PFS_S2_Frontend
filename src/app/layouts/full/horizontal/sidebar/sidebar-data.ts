@@ -6,24 +6,36 @@ export const navItems: NavItem[] = [
   },
   {
     displayName: 'Dashboards',
-    iconName: 'solar:chart-line-duotone',
+    iconName: 'solar:airbuds-case-minimalistic-line-duotone',
     route: 'dashboards',
     children: [
       {
         displayName: 'Dashboard 1',
-        iconName: 'solar:round-alt-arrow-right-line-duotone',
+        iconName: 'solar:widget-add-line-duotone',
         route: 'dashboards/dashboard1',
       },
       {
         displayName: 'Dashboard 2',
-        iconName: 'solar:round-alt-arrow-right-line-duotone',
+        iconName: 'solar:chart-line-duotone',
         route: 'dashboards/dashboard2',
       },
       {
         displayName: 'Dashboard 3',
-        iconName: 'solar:round-alt-arrow-right-line-duotone',
+        iconName: 'solar:screencast-2-line-duotone',
         route: 'dashboards/dashboard3',
       },
+    ],
+  },
+  {
+    displayName: 'Gestion des Surveillances',
+    iconName: 'solar:user-hand-up-linear',
+    route: 'surveillance-assignment',
+    children: [
+      {
+        displayName: 'Affectation des Surveillances',
+        iconName: 'solar:user-hand-up-linear',
+        route: 'surveillance-assignment',
+      }
     ],
   },
   {
