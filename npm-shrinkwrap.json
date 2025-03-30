@@ -781,6 +781,7 @@
       }
     },
     "node_modules/@angular/material": {
+      
       "version": "18.2.14",
       "resolved": "https://registry.npmjs.org/@angular/material/-/material-18.2.14.tgz",
       "integrity": "sha512-28pxzJP49Mymt664WnCtPkKeg7kXUsQKTKGf/Kl95rNTEdTJLbnlcc8wV0rT0yQNR7kXgpfBnG7h0ETLv/iu5Q==",
