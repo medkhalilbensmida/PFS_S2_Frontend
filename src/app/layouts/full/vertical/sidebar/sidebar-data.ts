@@ -21,6 +21,15 @@ export const navItems: NavItem[] = [
   },
   {
     divider: true,
+    navCap: 'Gestion des Surveillances',
+  },
+  {
+    displayName: 'Affectation des Surveillances',
+    iconName: 'solar:user-hand-up-linear',
+    route: '/surveillance-assignment',
+  },
+  {
+    divider: true,
     navCap: 'Apps',
   },
   {
