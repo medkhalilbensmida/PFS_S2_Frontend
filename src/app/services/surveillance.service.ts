@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_CONFIG } from '../pages/authentication/api.config';
 
 export interface Surveillance {
   id: number;
@@ -32,7 +33,8 @@ export interface AssignmentRequest {
   providedIn: 'root'
 })
 export class SurveillanceService {
-  private apiUrl = '/api';
+  
+  private apiUrl = `${API_CONFIG.BASE_URL}`;
 
   constructor(private http: HttpClient) { }
 
