@@ -54,16 +54,72 @@
           <div class="col-lg-6 d-flex align-items-center">
             <div>
               <span class="f-s-16 f-w-600 m-b-16 d-flex align-items-center"
-                ><i-tabler name="rocket" class="text-accent m-r-8"></i-tabler
-                >Commencez votre parcours d'apprentissage avec</span
+                ><i-tabler name="calendar-event" class="text-accent m-r-8"></i-tabler
+                >Optimisez la gestion des examens avec</span
               >
               <h1 class="banner-title m-0">
-                Améliorez
-                <span class="text-primary">Votre Expérience d'Apprentissage </span> avec Notre Plateforme Éducative
+                Simplifiez
+                <span class="text-primary">Votre Gestion des Surveillances </span> d'Examens
               </h1>
-              <p class="f-s-18 p-y-24 m-t-12 m-0 banner-subtitle">
-                Notre plateforme offre une suite complète d'outils pour que les étudiants et les enseignants collaborent, apprennent et grandissent ensemble.
-              </p>
+
+              <!-- ------------------------------------------------------------------
+              Section Fonctionnalités intégrée
+              ------------------------------------------------------------------ -->
+              <!-- Section Fonctionnalités - Version optimisée -->
+<div class="mt-5 pt-4">
+  <!-- Titre centré avec marge -->
+  <h3 class="text-center mb-5" style="font-size: 1.8rem; font-weight: 600;">Fonctionnalités clés</h3>
+  
+  <div class="row justify-content-center">  <!-- Centrage horizontal -->
+    <!-- Carte 1 -->
+    <div class="col-md-5 mb-4 mx-3">  <!-- Largeur + marge --> 
+      <div class="d-flex p-4 h-100" 
+           style="background: white; 
+                  border-radius: 10px;
+                  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                  border: 1px solid rgba(0,0,0,0.05);">
+           
+        <!-- Conteneur icône (taille fixe) -->
+        <div class="mr-4" style="min-width: 50px;">
+          <mat-icon color="primary" style="font-size: 42px; width: 42px; height: 42px;">calendar_today</mat-icon>
+        </div>
+        
+        <!-- Contenu texte -->
+        <div>
+          <h4 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px;">Planification des examens</h4>
+          <p style="color: #555; margin-bottom: 0; line-height: 1.5;">
+            Créez et gérez facilement les sessions d'examens avec tous les détails nécessaires.
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Carte 2 -->
+    <div class="col-md-5 mb-4 mx-3">
+      <div class="d-flex p-4 h-100" 
+           style="background: white; 
+                  border-radius: 10px;
+                  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                  border: 1px solid rgba(0,0,0,0.05);">
+        
+        <div class="mr-4" style="min-width: 50px;">
+          <mat-icon color="primary" style="font-size: 42px; width: 42px; height: 42px;">group</mat-icon>
+        </div>
+        
+        <div>
+          <h4 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px;">Gestion des enseignants</h4>
+          <p style="color: #555; margin-bottom: 0; line-height: 1.5;">
+            Consultez et gérez les disponibilités des enseignants pour les surveillances.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+              <!-- ------------------------------------------------------------------
+              Fin section Fonctionnalités intégrée
+              ------------------------------------------------------------------ -->
+
             </div>
           </div>
           <div class="col-lg-6 d-none d-lg-flex">
@@ -73,13 +129,13 @@
                   <div class="slider-img">
                     <img
                       src="assets/images/landingpage/img1.png"
-                      alt="img1"
+                      alt="Planning des examens"
                     />
                   </div>
                   <div class="slider-img">
                     <img
                       src="assets/images/landingpage/img1.png"
-                      alt="img1"
+                      alt="Gestion des salles"
                     />
                   </div>
                 </div>
@@ -87,13 +143,13 @@
                   <div class="slider-img2">
                     <img
                       src="assets/images/landingpage/img2.png"
-                      alt="img1"
+                      alt="Disponibilités enseignants"
                     />
                   </div>
                   <div class="slider-img2">
                     <img
                       src="assets/images/landingpage/img2.png"
-                      alt="img1"
+                      alt="Tableau de bord"
                     />
                   </div>
                 </div>
@@ -128,5 +184,16 @@
           />
         </a>
       </div>
-
-      
+      <!-- Menu mobile -->
+      <div class="mobile-menu">
+        <a
+          mat-flat-button
+          color="primary"
+          class="w-100 m-t-16"
+          [routerLink]="['/authentication/login']"
+          >Connexion</a
+        >
+      </div>
+    </div>
+  </mat-sidenav>
+</mat-sidenav-container>

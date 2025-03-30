@@ -1,0 +1,80 @@
+<div class="session-container">
+  <div class="search-header">
+    <div class="search-wrapper">
+      <mat-form-field appearance="fill" class="search-field">
+        <mat-label><mat-icon>search</mat-icon> Rechercher des sessions</mat-label>
+        <input matInput 
+               (keyup)="applyFilter($event)" 
+               placeholder="Tapez un type, semestre...">
+        <button mat-icon-button matSuffix *ngIf="searchText" (click)="clearSearch()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+    
+    @if(this.authService.isAdmin()) {
+      <button mat-flat-button 
+              color="primary" 
+              class="create-button"
+              (click)="openCreateSessionDialog()">
+        <mat-icon>add</mat-icon>
+        <span class="button-text">Nouvelle session</span>
+      </button>
+    }
+  </div>
+
+  <!-- Liste des sessions -->
+  <div class="session-grid">
+    @for(session of sessions; track session.id) {
+      <mat-card class="session-card mat-elevation-z2">
+        <!-- En-tête de carte colorée -->
+        <div class="card-header" [style.background]="getHeaderColor(session.type)">
+          <div class="header-content">
+            <span class="session-type">{{ getSessionTypeLabel(session.type) }}</span>
+            <span class="session-semestre">Semestre {{ session.numSemestre }}</span>
+          </div>
+          <mat-icon class="header-icon">school</mat-icon>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="card-content">
+          <div class="date-row">
+            <mat-icon>event</mat-icon>
+            <div class="date-info">
+              <span class="date-label">Début</span>
+              <span class="date-value">{{ session.dateDebut | date: 'mediumDate' }}</span>
+            </div>
+          </div>
+
+          <div class="date-row">
+            <mat-icon>event_available</mat-icon>
+            <div class="date-info">
+              <span class="date-label">Fin</span>
+              <span class="date-value">{{ session.dateFin | date: 'mediumDate' }}</span>
+            </div>
+          </div>
+
+          <div class="status-container">
+            <mat-chip [color]="session.estActive ? 'primary' : 'warn'" selected>
+              <mat-icon>{{ session.estActive ? 'check_circle' : 'cancel' }}</mat-icon>
+              {{ session.estActive ? 'Active' : 'Inactive' }}
+            </mat-chip>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card-actions">
+          <button mat-stroked-button color="primary" [routerLink]="['/apps/sessions/detail/', session.id]">
+            <mat-icon>visibility</mat-icon> Détails
+          </button>
+          
+          @if(this.authService.isAdmin()) {
+            <button mat-stroked-button color="warn" (click)="deleteSession(session.id)">
+              <mat-icon>delete</mat-icon> Supprimer
+            </button>
+          }
+        </div>
+      </mat-card>
+    } 
+  </div>
+</div>

@@ -29,7 +29,15 @@
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": ["src/favicon.ico", "src/assets"],
+            "assets": [
+              "src/favicon.ico",
+              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "src/assets/i18n",
+                "output": "/assets/i18n/"
+              }
+            ],
             "styles": [
               "src/styles.scss",
               "src/assets/scss/style.scss",
@@ -65,20 +73,20 @@
           },
           "defaultConfiguration": "production"
         },
-"serve": {
-  "builder": "@angular-devkit/build-angular:dev-server",
-  "configurations": {
-    "production": {
-      "buildTarget": "Matdash:build:production",
-      "proxyConfig": "proxy.conf.json"
-    },
-    "development": {
-      "buildTarget": "Matdash:build:development",
-      "proxyConfig": "proxy.conf.json"
-    }
-  },
-  "defaultConfiguration": "development"
-},
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "Matdash:build:production",
+              "proxyConfig": "proxy.conf.json"
+            },
+            "development": {
+              "buildTarget": "Matdash:build:development",
+              "proxyConfig": "proxy.conf.json"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
@@ -91,7 +99,15 @@
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
-            "assets": ["src/favicon.ico", "src/assets"],
+            "assets": [
+              "src/favicon.ico",
+              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "src/assets/i18n",
+                "output": "/assets/i18n/"
+              }
+            ],
             "styles": ["src/styles.scss"],
             "scripts": []
           }

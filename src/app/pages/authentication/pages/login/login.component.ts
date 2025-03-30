@@ -9,12 +9,15 @@ import { CommonModule } from '@angular/common';
 import { APP_ROUTES } from '../../app-routes.config';
 import { AuthService } from '../../services/auth.service';
 import { CredentialsDto } from '../../DTO/credentials.dto';
-import { LoginResponseDto } from '../../DTO/login-response.dto';
+import { LoginResponseEnseignantDto } from '../../DTO/login-response-enseignant.dto';
+import { LoginResponseAdminDto } from '../../DTO/login-response-admin.dto';
+import { MatNativeDateModule } from '@angular/material/core';
 
 @Component({
   selector: 'app-boxed-login',
   standalone: true,
   imports: [
+    MatNativeDateModule ,
     CommonModule,
     RouterModule,
     FormsModule,
@@ -60,9 +63,8 @@ export class AppBoxedLoginComponent {
     };
 
     this.authService.login(credentials).subscribe({
-      next: (response: LoginResponseDto) => {
+      next: (response: LoginResponseAdminDto | LoginResponseEnseignantDto) => {
         this.isLoading = false;
-        localStorage.setItem('token', response.token);
         
         // Redirection basée sur le rôle
         if (response.role === 'ROLE_ADMIN') {

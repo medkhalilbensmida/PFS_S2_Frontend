@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { course } from '../course';
-import { CourseService } from '../course.service';
+import { course } from '../../course';
+import { CourseService } from '../../course.service';
 import { MatCardModule } from '@angular/material/card';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { MatStepperModule } from '@angular/material/stepper';

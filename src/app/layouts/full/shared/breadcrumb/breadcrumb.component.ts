@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { Router, NavigationEnd, ActivatedRoute, Data } from '@angular/router';
@@ -19,7 +19,7 @@ export class AppBreadcrumbComponent {
   breadcrumb : any;
   myurl: any = this.router.url.slice(1).split('/');
   constructor(
-    private router: Router,
+    @Inject(Router) private router: Router,
     private activatedRoute: ActivatedRoute,
     private titleService: Title
   ) {

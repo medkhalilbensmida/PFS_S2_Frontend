@@ -53,9 +53,9 @@ export const navItems: NavItem[] = [
         route: 'apps/contacts',
       },
       {
-        displayName: 'Courses',
+        displayName: 'Sessions',
         iconName: 'solar:round-alt-arrow-right-line-duotone',
-        route: 'apps/courses',
+        route: 'apps/Sessions',
       },
       {
         displayName: 'Employee',

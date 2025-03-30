@@ -4,15 +4,17 @@ import { catchError, Observable, tap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CredentialsDto } from '../DTO/credentials.dto';
-import { LoginResponseDto } from '../DTO/login-response.dto';
 import { RegisterAdminDto, RegisterEnseignantDto } from '../DTO/register.dto';
 import { APP_ROUTES } from '../app-routes.config';
 import { API_CONFIG, APP_CONST } from '../api.config';
+import { LoginResponseAdminDto } from '../DTO/login-response-admin.dto';
+import { LoginResponseEnseignantDto } from '../DTO/login-response-enseignant.dto';
 
 interface ApiErrorResponse {
   code: string;
   message: string;
 }
+
 @Injectable({
   providedIn: 'root'
 })
@@ -21,8 +23,10 @@ export class AuthService {
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
 
-  login(credentials: CredentialsDto): Observable<LoginResponseDto> {
-    return this.http.post<LoginResponseDto>(
+  private currentUser: LoginResponseAdminDto | LoginResponseEnseignantDto | null = null;
+
+  login(credentials: CredentialsDto): Observable<LoginResponseAdminDto | LoginResponseEnseignantDto> {
+    return this.http.post<LoginResponseAdminDto | LoginResponseEnseignantDto>(
       `${API_CONFIG.BASE_URL}${API_CONFIG.AUTH.LOGIN}`,
       credentials,
       { 
@@ -41,7 +45,7 @@ export class AuthService {
     );
   }
 
-  registerAdmin(data: any): Observable<any> {
+  registerAdmin(data: RegisterAdminDto): Observable<any> {
     return this.http.post<{message: string}>(
       `${API_CONFIG.BASE_URL}${API_CONFIG.AUTH.REGISTER_ADMIN}`,
       data,
@@ -61,7 +65,7 @@ export class AuthService {
     );
   }
 
-  registerEnseignant(data: any): Observable<any> {
+  registerEnseignant(data: RegisterEnseignantDto): Observable<any> {
     return this.http.post<{message: string}>(
       `${API_CONFIG.BASE_URL}${API_CONFIG.AUTH.REGISTER_ENSEIGNANT}`,
       data,
@@ -81,28 +85,14 @@ export class AuthService {
     );
   }
 
-
-  private handleApiError(error: HttpErrorResponse): void {
-    if (error.status === 400 && error.error) {
-      const apiError = error.error as ApiErrorResponse;
-      if (apiError.code === 'EMAIL_EXISTS') {
-        this.snackBar.open(apiError.message, 'Fermer', { duration: 5000, panelClass: ['error-snackbar'] });
-        return;
-      }
-    }
-    this.snackBar.open("Une erreur est survenue", 'Fermer', { duration: 5000, panelClass: ['error-snackbar'] });
-  }
-
-  private handleLoginSuccess(response: LoginResponseDto): void {
+  private handleLoginSuccess(response: LoginResponseAdminDto | LoginResponseEnseignantDto): void {
+    this.currentUser = response;
     localStorage.setItem(APP_CONST.tokenLocalStorageKey, response.token);
     localStorage.setItem(APP_CONST.userRoleLocalStorageKey, response.role);
+    localStorage.setItem(APP_CONST.userDataLocalStorageKey, JSON.stringify(response));
+    
     this.snackBar.open('Connexion réussie', 'Fermer', { duration: 3000 });
     this.router.navigate([this.getRedirectRoute(response.role)]);
-  }
-
-  private handleRegisterSuccess(userType: string): void {
-    this.snackBar.open(`${userType} créé avec succès`, 'Fermer', { duration: 3000 });
-    this.router.navigate(['/authentication/login']);
   }
 
   private getRedirectRoute(role: string): string {
@@ -133,6 +123,17 @@ export class AuthService {
     this.snackBar.open(errorMessage, 'Fermer', { duration: 5000 });
   }
 
+  private handleApiError(error: HttpErrorResponse): void {
+    if (error.status === 400 && error.error) {
+      const apiError = error.error as ApiErrorResponse;
+      if (apiError.code === 'EMAIL_EXISTS') {
+        this.snackBar.open(apiError.message, 'Fermer', { duration: 5000, panelClass: ['error-snackbar'] });
+        return;
+      }
+    }
+    this.snackBar.open("Une erreur est survenue", 'Fermer', { duration: 5000, panelClass: ['error-snackbar'] });
+  }
+
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
@@ -153,9 +154,16 @@ export class AuthService {
     return localStorage.getItem(APP_CONST.userRoleLocalStorageKey);
   }
 
+  getUserData(): LoginResponseAdminDto | LoginResponseEnseignantDto | null {
+    const userData = localStorage.getItem(APP_CONST.userDataLocalStorageKey);
+    return userData ? JSON.parse(userData) : null;
+  }
+
   signOut(): void {
+    this.currentUser = null;
     localStorage.removeItem(APP_CONST.tokenLocalStorageKey);
     localStorage.removeItem(APP_CONST.userRoleLocalStorageKey);
+    localStorage.removeItem(APP_CONST.userDataLocalStorageKey);
     this.router.navigate(['/authentication/login']);
     this.snackBar.open('Déconnexion réussie', 'Fermer', { duration: 3000 });
   }

@@ -193,29 +193,7 @@
     </div>
   </mat-menu>
 
-  <!-- --------------------------------------------------------------- -->
-  <!-- langugage Dropdown -->
-  <!-- --------------------------------------------------------------- -->
-  <button [matMenuTriggerFor]="flags" mat-mini-fab color="inherit">
-    <img
-      [src]="selectedLanguage.icon"
-      class="rounded-circle object-cover icon-20 m-t-2"
-    />
-  </button>
-  <mat-menu #flags="matMenu" class="cardWithShadow">
-    @for(lang of languages; track lang.icon) {
-    <button mat-menu-item (click)="changeLanguage(lang)">
-      <div class="d-flex align-items-center">
-        <img
-          [src]="lang.icon"
-          class="rounded-circle object-cover m-r-8 icon-20"
-        />
-        <span class="mat-subtitle-1 f-s-14">{{ lang.language }}</span>
-      </div>
-    </button>
-    }
-  </mat-menu>
-
+ 
   <!-- --------------------------------------------------------------- -->
    <!-- profile Dropdown -->
    <button
@@ -236,46 +214,85 @@
      <i data-icon="solar:alt-arrow-down-bold" class="iconify f-s-8"></i>
    </div>
  </button>
- <mat-menu #profilemenu="matMenu" class="topbar-dd cardWithShadow">
-   <div class="p-x-32 p-y-16">
-     <div class="d-flex align-items-center p-b-24 b-b-1 m-t-16">
-       <img
-         src="/assets/images/profile/user-1.jpg"
-         class="rounded-circle"
-         width="56"
-       />
-       <div class="m-l-16">
-         <h6
-           class="f-s-14 f-w-600 m-0 mat-subtitle-1 d-flex align-items-center"
-         >
-           David McMichael
-           <span class="f-s-14 d-block text-success m-l-4">Pro</span>
-         </h6>
-         <span> david&#64;wrappixel.com </span>
-       </div>
-     </div>
-   </div>
-   <div class="p-x-32 p-b-16">
-    @for(profile of profiledd; track profile.id) {
-    <div 
-      class="p-8 text-decoration-none d-block text-hover-primary"
-      [routerLink]="profile.link ? [profile.link] : null"
-      (click)="!profile.link && profile.action ? profile.action() : null"
-      style="cursor: pointer;"
-    >
-      <div class="d-flex align-items-center">
-        <h5 class="f-s-14 f-w-600 m-0 textprimary mat-subtitle-1 hover-text">
-          {{ profile.title }}
-        </h5>
-        @if(profile.new) {
-        <span
-          class="bg-light-error text-error rounded-sm p-x-8 p-y-4 f-w-500 f-s-12 m-l-4"
-          >5</span
-        >
-        }
+<!-- ... (le reste du code reste inchangé jusqu'au menu profile) ... -->
+
+<mat-menu #profilemenu="matMenu" class="topbar-dd cardWithShadow" style="width: 300px;">
+  @if(userData) {
+  <div class="p-x-24 p-y-16">
+    <div class="d-flex align-items-center p-b-16 border-bottom">
+      <img
+        src="/assets/images/profile/user-1.jpg"
+        class="rounded-circle"
+        width="56"
+      />
+      <div class="m-l-16">
+        <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">
+          {{ userData.nom }} {{ userData.prenom }}
+        </h6>
+        <span class="d-block f-s-12 text-muted">{{ userData.email }}</span>
+        <span class="badge bg-light-success text-success f-s-12 f-w-500 mt-1">
+          {{ getUserRoleDisplay() }}
+        </span>
       </div>
     </div>
-    }
+    
+    <div class="p-t-16">
+      @if(userData.role === 'ROLE_ADMIN') {
+        <div class="d-flex align-items-center p-y-8">
+          <mat-icon class="text-muted" style="width: 24px;">work_outline</mat-icon>
+          <div class="m-l-16">
+            <div class="f-s-12 text-muted">Fonction</div>
+            <div class="f-s-14 f-w-500">{{ getAdminFonction() }}</div>
+          </div>
+        </div>
+      }
+      
+      @if(userData.role === 'ROLE_ENSEIGNANT') {
+        <div class="d-flex align-items-center p-y-8">
+          <mat-icon class="text-muted" style="width: 24px;">school</mat-icon>
+          <div class="m-l-16">
+            <div class="f-s-12 text-muted">Grade</div>
+            <div class="f-s-14 f-w-500">{{ getEnseignantGrade() }}</div>
+          </div>
+        </div>
+        
+        <div class="d-flex align-items-center p-y-8">
+          <mat-icon class="text-muted" style="width: 24px;">business</mat-icon>
+          <div class="m-l-16">
+            <div class="f-s-12 text-muted">Département</div>
+            <div class="f-s-14 f-w-500">{{ getEnseignantDepartement() }}</div>
+          </div>
+        </div>
+      }
+      
+      <div class="d-flex align-items-center p-y-8">
+        <mat-icon class="text-muted" style="width: 24px;">phone</mat-icon>
+        <div class="m-l-16">
+          <div class="f-s-12 text-muted">Téléphone</div>
+          <div class="f-s-14 f-w-500">{{ userData.telephone }}</div>
+        </div>
+      </div>
+    </div>
   </div>
- </mat-menu>
+  
+  <mat-divider></mat-divider>
+  
+  <div class="p-x-16 p-y-8">
+    <button mat-menu-item routerLink="/profil">
+      <mat-icon>person_outline</mat-icon>
+      <span>Mon Profil</span>
+    </button>
+    
+    <button mat-menu-item routerLink="/parametres">
+      <mat-icon>settings</mat-icon>
+      <span>Paramètres du compte</span>
+    </button>
+    
+    <button mat-menu-item (click)="authService.signOut()">
+      <mat-icon>logout</mat-icon>
+      <span>Déconnexion</span>
+    </button>
+  </div>
+  }
+</mat-menu>
 </mat-toolbar>

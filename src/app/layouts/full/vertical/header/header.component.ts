@@ -1,15 +1,14 @@
-// header.ts
 import {
   Component,
   Output,
   EventEmitter,
   Input,
   ViewEncapsulation,
+  OnInit
 } from '@angular/core';
 import { CoreService } from 'src/app/services/core.service';
 import { MatDialog } from '@angular/material/dialog';
 import { navItems } from '../sidebar/sidebar-data';
-import { TranslateService } from '@ngx-translate/core';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { MaterialModule } from 'src/app/material.module';
 import { RouterModule } from '@angular/router';
@@ -18,6 +17,8 @@ import { FormsModule } from '@angular/forms';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { AppSettings } from 'src/app/config';
 import { AuthService } from 'src/app/pages/authentication/services/auth.service';
+import { LoginResponseEnseignantDto } from 'src/app/pages/authentication/DTO/login-response-enseignant.dto';
+import { LoginResponseAdminDto } from 'src/app/pages/authentication/DTO/login-response-admin.dto';
 
 interface notifications {
   id: number;
@@ -33,7 +34,7 @@ interface profiledd {
   title: string;
   link?: string;
   new?: boolean;
-  action?: () => void; // Ajouté pour gérer les actions
+  action?: () => void;
 }
 
 interface apps {
@@ -58,7 +59,7 @@ interface apps {
   templateUrl: './header.component.html',
   encapsulation: ViewEncapsulation.None,
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   @Input() showToggle = true;
   @Input() toggleChecked = false;
   @Output() toggleMobileNav = new EventEmitter<void>();
@@ -66,46 +67,31 @@ export class HeaderComponent {
   @Output() toggleCollapsed = new EventEmitter<void>();
 
   showFiller = false;
+  userData: LoginResponseAdminDto | LoginResponseEnseignantDto | null = null;
 
   public selectedLanguage: any = {
-    language: 'English',
-    code: 'en',
-    type: 'US',
-    icon: '/assets/images/flag/icon-flag-en.svg',
+    language: 'Français',
+    code: 'fr',
+    icon: '/assets/images/flag/icon-flag-fr.svg',
   };
 
   public languages: any[] = [
     {
-      language: 'English',
-      code: 'en',
-      type: 'US',
-      icon: '/assets/images/flag/icon-flag-en.svg',
-    },
-    {
-      language: 'Español',
-      code: 'es',
-      icon: '/assets/images/flag/icon-flag-es.svg',
-    },
-    {
       language: 'Français',
       code: 'fr',
       icon: '/assets/images/flag/icon-flag-fr.svg',
-    },
-    {
-      language: 'German',
-      code: 'de',
-      icon: '/assets/images/flag/icon-flag-de.svg',
-    },
+    }
   ];
 
   constructor(
     private settings: CoreService,
     private vsidenav: CoreService,
     public dialog: MatDialog,
-    private translate: TranslateService,
-    private authService: AuthService // Ajouté
-  ) {
-    translate.setDefaultLang('en');
+    public authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    this.userData = this.authService.getUserData();
   }
 
   options = this.settings.getOptions();
@@ -122,9 +108,39 @@ export class HeaderComponent {
     });
   }
 
+  getAdminFonction(): string {
+    if (this.userData && this.userData.role === 'ROLE_ADMIN') {
+      return (this.userData as any).fonction;
+    }
+    return '';
+  }
+  
+  getEnseignantGrade(): string {
+    if (this.userData && this.userData.role === 'ROLE_ENSEIGNANT') {
+      return (this.userData as any).grade;
+    }
+    return '';
+  }
+  
+  getEnseignantDepartement(): string {
+    if (this.userData && this.userData.role === 'ROLE_ENSEIGNANT') {
+      return (this.userData as any).departement;
+    }
+    return '';
+  }
+
   changeLanguage(lang: any): void {
-    this.translate.use(lang.code);
     this.selectedLanguage = lang;
+    console.log(`Language changed to ${lang.language}`);
+  }
+
+  getProfileIcon(id: number): string {
+    switch(id) {
+      case 1: return 'person_outline';
+      case 2: return 'settings';
+      case 3: return 'logout';
+      default: return 'info';
+    }
   }
 
   notifications: notifications[] = [
@@ -132,71 +148,59 @@ export class HeaderComponent {
       id: 1,
       icon: 'a-b-2',
       color: 'primary',
-      time: '8:30 AM',
-      title: 'Launch Admin',
-      subtitle: 'Just see the my new admin!',
+      time: '08:30',
+      title: 'Nouvelle version',
+      subtitle: 'Une nouvelle version est disponible',
     },
     {
       id: 2,
       icon: 'calendar',
       color: 'accent',
-      time: '8:21 AM',
-      title: 'Event today',
-      subtitle: 'Just a reminder that you have event',
+      time: '08:21',
+      title: 'Événement aujourd\'hui',
+      subtitle: 'Vous avez un événement prévu',
     },
     {
       id: 3,
       icon: 'settings',
       color: 'warning',
-      time: '8:05 AM',
-      title: 'Settings',
-      subtitle: 'You can customize this template',
+      time: '08:05',
+      title: 'Paramètres',
+      subtitle: 'Personnalisez votre interface',
     },
     {
       id: 4,
       icon: 'a-b-2',
       color: 'success',
-      time: '7:30 AM',
-      title: 'Launch Templates',
-      subtitle: 'Just see the my new admin!',
+      time: '07:30',
+      title: 'Mise à jour',
+      subtitle: 'Mise à jour des templates',
     },
     {
       id: 5,
       icon: 'exclamation-circle',
       color: 'error',
-      time: '7:03 AM',
-      title: 'Event tomorrow',
-      subtitle: 'Just a reminder that you have event',
+      time: '07:03',
+      title: 'Événement demain',
+      subtitle: 'Rappel pour votre événement',
     },
   ];
 
   profiledd: profiledd[] = [
     {
       id: 1,
-      title: 'My Profile',
-      link: '/',
+      title: 'Mon Profil',
+      link: '/profil',
     },
     {
       id: 2,
-      title: 'My Subscription',
-      link: '/',
+      title: 'Paramètres',
+      link: '/parametres',
     },
     {
       id: 3,
-      title: 'My Invoice',
-      new: true,
-      link: '/',
-    },
-    {
-      id: 4,
-      title: 'Account Settings',
-      link: '/',
-    },
-    {
-      id: 5,
-      title: 'Sign Out',
-      action: () => this.authService.signOut() // Modifié pour utiliser la méthode signOut
- 
+      title: 'Déconnexion',
+      action: () => this.authService.signOut()
     },
   ];
 
@@ -205,7 +209,7 @@ export class HeaderComponent {
       id: 1,
       icon: 'solar:chat-line-line-duotone',
       color: 'primary',
-      title: 'Chat Application',
+      title: 'Messagerie',
       subtitle: 'Messages & Emails',
       link: '/apps/chat',
     },
@@ -213,59 +217,64 @@ export class HeaderComponent {
       id: 2,
       icon: 'solar:checklist-minimalistic-line-duotone',
       color: 'accent',
-      title: 'Todo App',
-      subtitle: 'Completed task',
+      title: 'Tâches',
+      subtitle: 'Liste des tâches',
       link: '/apps/todo',
     },
     {
       id: 3,
       icon: 'solar:bill-list-line-duotone',
       color: 'success',
-      title: 'Invoice App',
-      subtitle: 'Get latest invoice',
+      title: 'Factures',
+      subtitle: 'Gestion des factures',
       link: '/apps/invoice',
     },
     {
       id: 4,
       icon: 'solar:calendar-line-duotone',
       color: 'error',
-      title: 'Calendar App',
-      subtitle: 'Get Dates',
+      title: 'Calendrier',
+      subtitle: 'Vos rendez-vous',
       link: '/apps/calendar',
     },
     {
       id: 5,
       icon: 'solar:smartphone-2-line-duotone',
       color: 'warning',
-      title: 'Contact Application',
-      subtitle: '2 Unsaved Contacts',
+      title: 'Contacts',
+      subtitle: 'Gestion des contacts',
       link: '/apps/contacts',
     },
     {
       id: 6,
       icon: 'solar:ticket-line-duotone',
       color: 'primary',
-      title: 'Tickets App',
-      subtitle: 'Create new ticket',
+      title: 'Tickets',
+      subtitle: 'Support technique',
       link: '/apps/tickets',
     },
     {
       id: 7,
       icon: 'solar:letter-line-duotone',
       color: 'accent',
-      title: 'Email App',
-      subtitle: 'Get new emails',
+      title: 'Emails',
+      subtitle: 'Boîte de réception',
       link: '/apps/email/inbox',
     },
     {
       id: 8,
       icon: 'solar:book-2-line-duotone',
       color: 'warning',
-      title: 'Courses',
-      subtitle: 'Create new course',
-      link: '/apps/courses',
+      title: 'Sessions',
+      subtitle: 'Gestion des sessions d`examen',
+      link: '/apps/Sessions',
     },
   ];
+
+  getUserRoleDisplay(): string {
+    if (!this.userData) return '';
+    return this.userData.role === 'ROLE_ADMIN' ? 'Administrateur' : 'Enseignant';
+  }
 }
 
 @Component({

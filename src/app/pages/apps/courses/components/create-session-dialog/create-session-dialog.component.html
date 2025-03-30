@@ -1,0 +1,84 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>Créer une nouvelle session d'examen</h2>
+  
+  <form #sessionForm="ngForm" (ngSubmit)="onSubmit()" class="form-container">
+    <!-- Type de session -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Type de session</mat-label>
+      <mat-select name="type" [(ngModel)]="sessionData.type" required>
+        <mat-option *ngFor="let type of typesSession" [value]="type">
+          {{ type === 'DS' ? 'Devoir Surveillé' : 
+             type === 'PRINCIPALE' ? 'Session Principale' : 
+             'Session de Rattrapage' }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Semestre -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Semestre</mat-label>
+      <mat-select name="semestre" [(ngModel)]="sessionData.numSemestre" required>
+        <mat-option *ngFor="let semestre of semestres" [value]="semestre">
+          {{ semestre }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Dates simplifiées -->
+    <div class="date-row">
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Date de début (JJ/MM/AAAA)</mat-label>
+        <input matInput 
+               [(ngModel)]="sessionData.dateDebut" 
+               name="dateDebut" 
+               placeholder="JJ/MM/AAAA"
+               required
+               pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[012])/(19|20)\d\d$">
+        <mat-icon matSuffix>calendar_today</mat-icon>
+        <mat-error *ngIf="sessionForm.controls['dateDebut']?.errors?.['pattern']">
+          Format invalide (JJ/MM/AAAA)
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Date de fin (JJ/MM/AAAA)</mat-label>
+        <input matInput 
+               [(ngModel)]="sessionData.dateFin" 
+               name="dateFin" 
+               placeholder="JJ/MM/AAAA"
+               required
+               pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[012])/(19|20)\d\d$">
+        <mat-icon matSuffix>calendar_today</mat-icon>
+        <mat-error *ngIf="sessionForm.controls['dateFin']?.errors?.['pattern']">
+          Format invalide (JJ/MM/AAAA)
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- Année universitaire -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Année universitaire</mat-label>
+      <mat-select name="annee" [(ngModel)]="sessionData.anneeUniversitaireId" required>
+        <mat-option *ngFor="let annee of anneesUniversitaires" [value]="annee.id">
+          {{ formatAnnee(annee) }}
+          <span *ngIf="annee.estActive" class="active-badge">(Active)</span>
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Statut actif -->
+    <mat-checkbox name="estActive" [(ngModel)]="sessionData.estActive">
+      Session active
+    </mat-checkbox>
+
+    <!-- Actions -->
+    <div mat-dialog-actions>
+      <button mat-button type="button" (click)="dialogRef.close()">Annuler</button>
+      <button mat-raised-button color="primary" type="submit" 
+              [disabled]="!sessionForm.valid || isLoading">
+        <span *ngIf="!isLoading">Créer</span>
+        <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+      </button>
+    </div>
+  </form>
+</div>

@@ -6,6 +6,7 @@ import {
   OnChanges,
   Output,
   EventEmitter,
+  Inject,
 } from '@angular/core';
 import { NavItem } from './nav-item';
 import { Router } from '@angular/router';
@@ -50,7 +51,7 @@ export class AppNavItemComponent implements OnChanges {
   @Input() item: NavItem | any;
   @Input() depth: any;
 
-  constructor(public navService: NavService, public router: Router) {
+  constructor(public navService: NavService, @Inject(Router) public router: Router) {
     if (this.depth === undefined) {
       this.depth = 0;
     }

@@ -1,0 +1,88 @@
+.dialog-container {
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+}
+
+.dialog-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #4a4a4a;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.dialog-container {
+  padding: 20px;
+  min-width: 500px;
+
+  .form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    .full-width {
+      width: 100%;
+    }
+
+    .half-width {
+      width: 48%;
+    }
+
+    .date-row {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+
+  mat-spinner {
+    margin: 0 auto;
+  }
+}
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+mat-form-field {
+  border-radius: 8px;
+}
+
+.mat-datepicker-content {
+  z-index: 1000 !important;
+}
+
+/* Style pour les champs date */
+.mat-datepicker-toggle {
+  cursor: pointer;
+}
+
+.mat-form-field {
+  .mat-form-field-wrapper {
+    .mat-form-field-flex {
+      .mat-form-field-infix {
+        input {
+          cursor: pointer;
+        }
+      }
+    }
+  }
+}
+
+mat-icon {
+  color: #757575;
+}
+
+button {
+  font-size: 16px;
+}

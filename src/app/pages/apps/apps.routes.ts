@@ -3,8 +3,8 @@ import { Routes } from '@angular/router';
 import { AppChatComponent } from './chat/chat.component';
 import { AppEmailComponent } from './email/email.component';
 import { DetailComponent } from './email/detail/detail.component';
-import { AppCoursesComponent } from './courses/courses.component';
-import { AppCourseDetailComponent } from './courses/course-detail/course-detail.component';
+import { SessionListComponent } from './courses/components/session-list/session-list.component';
+import { AppCourseDetailComponent } from './courses/components/session-detail/course-detail.component';
 import { AppEmployeeComponent } from './employee/employee.component';
 import { AppBlogsComponent } from './blogs/blogs.component';
 import { AppBlogDetailsComponent } from './blogs/details/details.component';
@@ -95,10 +95,10 @@ export const AppsRoutes: Routes = [
         }
       },
       {
-        path: 'courses',
-        component: AppCoursesComponent,
+        path: 'Sessions',
+        component: SessionListComponent,
         data: {
-          title: 'Courses',
+          title: 'Sessions',
         }
       },
       {
