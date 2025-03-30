@@ -22,7 +22,19 @@ export const routes: Routes = [
           title: 'Affectation des Surveillances',
           urls: [
             { title: 'Dashboard', url: '/dashboards/dashboard1' },
-            { title: 'Affectation des Surveillances' },
+            { title: 'Affectation des Surveillances (Toutes)' },
+          ],
+        },
+      },
+      {
+        path: 'surveillance-assignment/:sessionId',
+        component: SurveillanceAssignmentComponent,
+        data: {
+          title: 'Affectation - Session Spécifique',
+          urls: [
+            { title: 'Dashboard', url: '/dashboards/dashboard1' },
+            { title: 'Sessions', url: '/apps/courses/session-list' },
+            { title: 'Affectation Surveillances' },
           ],
         },
       },

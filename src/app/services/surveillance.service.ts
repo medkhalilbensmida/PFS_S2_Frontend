@@ -46,6 +46,13 @@ export class SurveillanceService {
   }
 
   /**
+   * Récupère les surveillances pour une session spécifique
+   */
+  getSurveillancesBySessionId(sessionId: number): Observable<Surveillance[]> {
+    return this.http.get<Surveillance[]>(`${this.apiUrl}/surveillances`, { params: { sessionId: sessionId.toString() } });
+  }
+
+  /**
    * Récupère une surveillance spécifique par son ID
    */
   getSurveillanceById(id: number): Observable<Surveillance> {
