@@ -1,0 +1,110 @@
+<div class="container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Affectation des Surveillances</mat-card-title>
+      <mat-card-subtitle>Assigner des enseignants aux surveillances d'examens</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+      
+      <form [formGroup]="assignForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+        <div class="form-group">
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Sélectionner une surveillance</mat-label>
+            <mat-select formControlName="surveillanceId">
+              <mat-option *ngFor="let surveillance of surveillances" [value]="surveillance.id">
+                {{ formatDate(surveillance.dateDebut) }} - {{ formatDate(surveillance.dateFin) }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="assignForm.get('surveillanceId')?.hasError('required')">
+              Veuillez sélectionner une surveillance
+            </mat-error>
+          </mat-form-field>
+        </div>
+        
+        <div class="form-row" *ngIf="selectedSurveillanceId">
+          <div class="form-group">
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Enseignant Principal</mat-label>
+              <mat-select formControlName="enseignantPrincipalId">
+                <mat-option [value]="null">Aucun</mat-option>
+                <mat-option *ngFor="let enseignant of enseignants" [value]="enseignant.id">
+                  {{ enseignant.prenom }} {{ enseignant.nom }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          
+          <div class="form-group">
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Enseignant Secondaire</mat-label>
+              <mat-select formControlName="enseignantSecondaireId">
+                <mat-option [value]="null">Aucun</mat-option>
+                <mat-option *ngFor="let enseignant of enseignants" [value]="enseignant.id">
+                  {{ enseignant.prenom }} {{ enseignant.nom }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        
+        <div class="button-row">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            type="submit" 
+            [disabled]="assignForm.invalid || loading"
+          >
+            Affecter
+          </button>
+        </div>
+      </form>
+      
+      <div class="surveillance-list" *ngIf="surveillances.length && !loading">
+        <h3>Liste des surveillances</h3>
+        
+        <mat-table [dataSource]="surveillances" class="mat-elevation-z2">
+          <!-- Date Début Column -->
+          <ng-container matColumnDef="dateDebut">
+            <mat-header-cell *matHeaderCellDef> Date Début </mat-header-cell>
+            <mat-cell *matCellDef="let surveillance"> {{ formatDate(surveillance.dateDebut) }} </mat-cell>
+          </ng-container>
+          
+          <!-- Date Fin Column -->
+          <ng-container matColumnDef="dateFin">
+            <mat-header-cell *matHeaderCellDef> Date Fin </mat-header-cell>
+            <mat-cell *matCellDef="let surveillance"> {{ formatDate(surveillance.dateFin) }} </mat-cell>
+          </ng-container>
+          
+          <!-- Statut Column -->
+          <ng-container matColumnDef="statut">
+            <mat-header-cell *matHeaderCellDef> Statut </mat-header-cell>
+            <mat-cell *matCellDef="let surveillance"> {{ surveillance.statut }} </mat-cell>
+          </ng-container>
+          
+          <!-- Enseignant Principal Column -->
+          <ng-container matColumnDef="enseignantPrincipal">
+            <mat-header-cell *matHeaderCellDef> Enseignant Principal </mat-header-cell>
+            <mat-cell *matCellDef="let surveillance"> 
+              {{ getEnseignantFullName(surveillance.enseignantPrincipalId) }} 
+            </mat-cell>
+          </ng-container>
+          
+          <!-- Enseignant Secondaire Column -->
+          <ng-container matColumnDef="enseignantSecondaire">
+            <mat-header-cell *matHeaderCellDef> Enseignant Secondaire </mat-header-cell>
+            <mat-cell *matCellDef="let surveillance"> 
+              {{ getEnseignantFullName(surveillance.enseignantSecondaireId) }} 
+            </mat-cell>
+          </ng-container>
+          
+          <mat-header-row *matHeaderRowDef="['dateDebut', 'dateFin', 'statut', 'enseignantPrincipal', 'enseignantSecondaire']"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: ['dateDebut', 'dateFin', 'statut', 'enseignantPrincipal', 'enseignantSecondaire']"></mat-row>
+        </mat-table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
