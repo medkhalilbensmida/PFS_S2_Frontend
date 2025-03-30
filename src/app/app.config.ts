@@ -42,6 +42,7 @@ import { AuthService } from './pages/authentication/services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { TranslationService } from './pages/apps/courses/services/translation.service';
+import { AuthInterceptorProvider } from './pages/authentication/interceptors/auth.interceptor';
 
 // Functional interceptor
 const authInterceptorFn: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn) => {
@@ -148,5 +149,7 @@ export const appConfig: ApplicationConfig = {
         isolate: false
       })
     ),
+    // Register the existing interceptor
+    AuthInterceptorProvider,
   ],
 };
