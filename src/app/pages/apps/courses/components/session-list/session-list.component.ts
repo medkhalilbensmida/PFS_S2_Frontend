@@ -18,6 +18,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { CreateSessionDialogComponent } from '../create-session-dialog/create-session-dialog.component';
 import { RouterModule } from '@angular/router';
+import { EditSessionDialogComponent } from '../edit-session-dialog/edit-session-dialog.component';
 
 @Component({
   selector: 'app-session-list',
@@ -64,6 +65,19 @@ export class SessionListComponent implements OnInit {
   openCreateSessionDialog(): void {
     const dialogRef = this.dialog.open(CreateSessionDialogComponent, {
       width: '500px',
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadSessions();
+      }
+    });
+  }
+
+  openEditSessionDialog(session: SessionExamen): void {
+    const dialogRef = this.dialog.open(EditSessionDialogComponent, {
+      width: '500px',
+      data: { session: session }
     });
 
     dialogRef.afterClosed().subscribe((result) => {
@@ -129,7 +143,7 @@ export class SessionListComponent implements OnInit {
             }
         });
     }
-}
+  }
 
   clearSearch(): void {
     this.searchText = '';

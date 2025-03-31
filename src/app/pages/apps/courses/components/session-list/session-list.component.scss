@@ -245,6 +245,59 @@ $rattrapage-color: #ffa726;
   background-color: #f44336 !important;
   color: white !important;
 }
+
+/* Ajoutez ceci à la fin du fichier */
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+
+  button {
+    flex: 1;
+  }
+}
+.status-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .status-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+  }
+
+  &.active {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+    
+    .status-icon {
+      color: #2e7d32;
+    }
+  }
+
+  &.inactive {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+    
+    .status-icon {
+      color: #c62828;
+    }
+  }
+}
 /* Empty State */
 .empty-state {
   grid-column: 1 / -1;

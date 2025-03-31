@@ -30,7 +30,14 @@
         <!-- En-tête de carte colorée -->
         <div class="card-header" [style.background]="getHeaderColor(session.type)">
           <div class="header-content">
-            <span class="session-type">{{ getSessionTypeLabel(session.type) }}</span>
+            <div class="session-type-container">
+              <span class="session-type">{{ getSessionTypeLabel(session.type) }}</span>
+              @if(this.authService.isAdmin()) {
+                <button mat-icon-button class="edit-icon" (click)="openEditSessionDialog(session)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              }
+            </div>
             <span class="session-semestre">Semestre {{ session.numSemestre }}</span>
           </div>
           <mat-icon class="header-icon">school</mat-icon>
@@ -55,11 +62,12 @@
           </div>
 
           <div class="status-container">
-            <mat-chip [color]="session.estActive ? 'primary' : 'warn'" selected>
-              <mat-icon>{{ session.estActive ? 'check_circle' : 'cancel' }}</mat-icon>
-              {{ session.estActive ? 'Active' : 'Inactive' }}
-            </mat-chip>
+            <div class="status-badge" [class.active]="session.estActive" [class.inactive]="!session.estActive">
+              <mat-icon class="status-icon">{{ session.estActive ? 'check_circle' : 'cancel' }}</mat-icon>
+              <span class="status-text">{{ session.estActive ? 'Active' : 'Inactive' }}</span>
+            </div>
           </div>
+
         </div>
 
         <!-- Actions -->

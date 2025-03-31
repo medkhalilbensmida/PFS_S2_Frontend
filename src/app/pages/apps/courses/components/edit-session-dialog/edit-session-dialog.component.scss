@@ -1,0 +1,75 @@
+.full-width {
+    width: 100%;
+    margin-bottom: 12px;  // Réduit de 20px à 12px
+  }
+  
+  .session-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;  // Réduit de 15px à 10px
+  }
+  
+  .status-toggle-container {
+    margin: 12px 0;  // Réduit de 15px à 12px
+    display: flex;
+    justify-content: center;
+  }
+  
+  .status-toggle {
+    .toggle-content {
+      display: flex;
+      align-items: center;
+      padding: 6px 0;  // Réduit de 8px à 6px
+    }
+  
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;  // Réduit de 8px à 6px
+      padding: 4px 10px;  // Réduit de 6px 12px à 4px 10px
+      border-radius: 16px;
+      transition: all 0.3s ease;
+  
+      &.active {
+        background-color: rgba(46, 125, 50, 0.1);
+        color: #2e7d32;
+      }
+  
+      &:not(.active) {
+        background-color: rgba(198, 40, 40, 0.1);
+        color: #c62828;
+      }
+    }
+  
+    .status-icon {
+      font-size: 18px;  // Réduit de 20px à 18px
+      width: 18px;
+      height: 18px;
+    }
+  
+    .status-label {
+      font-weight: 500;
+      font-size: 13px;  // Réduit de 14px à 13px
+    }
+  }
+  
+  mat-dialog-content {
+    padding: 16px 20px;  // Réduit de 20px 24px à 16px 20px
+  }
+  
+  mat-dialog-actions {
+    padding: 12px 20px;  // Réduit de 16px 24px à 12px 20px
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    justify-content: flex-end;
+    gap: 8px;  // Réduit de 10px à 8px
+  }
+  
+  /* Le reste du CSS reste inchangé */
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }

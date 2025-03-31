@@ -1,0 +1,82 @@
+<h2 mat-dialog-title>Modifier la session</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="sessionForm" class="session-form">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Type de session</mat-label>
+      <mat-select formControlName="type" required>
+        <mat-option value="DS">Devoir Surveillé</mat-option>
+        <mat-option value="PRINCIPALE">Session Principale</mat-option>
+        <mat-option value="RATTRAPAGE">Session de Rattrapage</mat-option>
+      </mat-select>
+      <mat-error *ngIf="sessionForm.get('type')?.hasError('required')">
+        Le type est requis
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Semestre</mat-label>
+      <mat-select formControlName="numSemestre" required>
+        <mat-option value="S1">Semestre 1</mat-option>
+        <mat-option value="S2">Semestre 2</mat-option>
+      </mat-select>
+      <mat-error *ngIf="sessionForm.get('numSemestre')?.hasError('required')">
+        Le semestre est requis
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Date de début</mat-label>
+      <input matInput [matDatepicker]="picker1" formControlName="dateDebut" required>
+      <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+      <mat-datepicker #picker1></mat-datepicker>
+      <mat-error *ngIf="sessionForm.get('dateDebut')?.hasError('required')">
+        La date de début est requise
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Date de fin</mat-label>
+      <input matInput [matDatepicker]="picker2" formControlName="dateFin" required>
+      <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+      <mat-datepicker #picker2></mat-datepicker>
+      <mat-error *ngIf="sessionForm.get('dateFin')?.hasError('required')">
+        La date de fin est requise
+      </mat-error>
+    </mat-form-field>
+
+    <div class="status-toggle-container">
+      <mat-slide-toggle 
+        formControlName="estActive" 
+        color="primary"
+        class="status-toggle"
+        (change)="onStatusChange()">
+        <div class="toggle-content">
+          <div class="status-indicator" [class.active]="sessionForm.get('estActive')?.value">
+            <mat-icon class="status-icon">
+              {{ sessionForm.get('estActive')?.value ? 'check_circle' : 'cancel' }}
+            </mat-icon>
+            <span class="status-label">
+              {{ sessionForm.get('estActive')?.value ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+      </mat-slide-toggle>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Annuler</button>
+  <button mat-raised-button 
+          color="primary" 
+          (click)="onSubmit()"
+          [disabled]="!sessionForm.valid || isLoading">
+    @if (isLoading) {
+      <mat-icon class="spinner">hourglass_empty</mat-icon>
+    } @else {
+      <mat-icon>save</mat-icon>
+    }
+    Enregistrer
+  </button>
+</mat-dialog-actions>

@@ -26,6 +26,10 @@ export class SessionExamenService {
     }));
   }
 
+  updateSession(id: number, session: SessionExamen): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, session);
+  }
+
   getAnneesUniversitaires(): Observable<AnneeUniversitaire[]> {
     return this.http.get<any[]>(this.anneeUrl).pipe(
       map(annees => annees.map(a => ({
@@ -58,11 +62,6 @@ export class SessionExamenService {
     );
   }
 
-  updateSession(id: number, session: SessionExamen): Observable<SessionExamen> {
-    return this.http.put<SessionExamen>(`${this.apiUrl}/${id}`, session).pipe(
-      catchError(this.handleError)
-    );
-  }
 
   deleteSession(id: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/${id}`).pipe(
