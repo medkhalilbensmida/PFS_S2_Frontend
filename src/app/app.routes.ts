@@ -3,6 +3,7 @@ import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
 import { AuthGuard } from './pages/authentication/guards/auth.guard';
 import { SurveillanceAssignmentComponent } from './components/surveillance-assignment/surveillance-assignment.component';
+import { SurveillanceManagementComponent } from './components/surveillance-management/surveillance-management.component';
 
 export const routes: Routes = [
   {
@@ -14,6 +15,18 @@ export const routes: Routes = [
         path: '',
         redirectTo: '/dashboards/dashboard1', // Redirige vers le dashboard par défaut
         pathMatch: 'full',
+      },
+      {
+        path: 'surveillance-management/:sessionId',
+        component: SurveillanceManagementComponent,
+        data: {
+          title: 'Gestion des Surveillances',
+          urls: [
+            { title: 'Dashboard', url: '/dashboards/dashboard1' },
+            { title: 'Sessions', url: '/apps/courses/session-list' },
+            { title: 'Gestion des Surveillances' },
+          ],
+        },
       },
       {
         path: 'surveillance-assignment',

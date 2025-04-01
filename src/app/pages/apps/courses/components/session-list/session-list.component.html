@@ -70,6 +70,9 @@
           <button mat-stroked-button color="accent" [routerLink]="['/surveillance-assignment', session.id]">
             <mat-icon>assignment_ind</mat-icon> Affecter Surveillances
           </button>
+          <button mat-stroked-button color="accent" [routerLink]="['/surveillance-management', session.id]">
+            <mat-icon>manage_search</mat-icon> Voir Détails
+          </button>
           
           @if(this.authService.isAdmin()) {
             <button mat-stroked-button color="warn" (click)="deleteSession(session.id)">

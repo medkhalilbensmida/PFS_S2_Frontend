@@ -148,17 +148,15 @@ $rattrapage-color: #ffa726;
 }
 
 .card-actions {
-  padding: 16px;
   display: flex;
-  gap: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
-
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding: 8px 16px 16px;
+  
   button {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    min-width: 130px;
+    margin-bottom: 8px;
   }
 }
 /* Barre de recherche améliorée */
