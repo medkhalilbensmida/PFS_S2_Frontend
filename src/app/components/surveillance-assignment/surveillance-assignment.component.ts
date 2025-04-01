@@ -6,6 +6,8 @@ import { throwError } from 'rxjs';
 import { SurveillanceService, Surveillance, Enseignant, AssignmentRequest } from '../../services/surveillance.service';
 import { MaterialModule } from '../../material.module';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-surveillance-assignment',
@@ -24,11 +26,13 @@ export class SurveillanceAssignmentComponent implements OnInit {
   assignForm: FormGroup;
   selectedSurveillanceId: number | null = null;
   loading = false;
+  sessionId: number | null = null;
   
   constructor(
     private surveillanceService: SurveillanceService,
     private fb: FormBuilder,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private route: ActivatedRoute
   ) {
     this.assignForm = this.fb.group({
       surveillanceId: ['', Validators.required],
@@ -38,10 +42,14 @@ export class SurveillanceAssignmentComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadSurveillances();
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('sessionId');
+      this.sessionId = id ? +id : null;
+      this.loadSurveillances();
+    });
+
     this.loadEnseignants();
 
-    // Update form when surveillance is selected
     this.assignForm.get('surveillanceId')?.valueChanges.subscribe(value => {
       if (value) {
         this.selectedSurveillanceId = value;
@@ -58,17 +66,30 @@ export class SurveillanceAssignmentComponent implements OnInit {
 
   loadSurveillances(): void {
     this.loading = true;
-    this.surveillanceService.getAllSurveillances()
-      .pipe(
-        catchError(error => {
-          this.showError('Impossible de charger les surveillances');
-          return throwError(() => error);
-        })
-      )
-      .subscribe(data => {
-        this.surveillances = data;
+    let surveillanceObservable: Observable<Surveillance[]>;
+
+    if (this.sessionId !== null) {
+      surveillanceObservable = this.surveillanceService.getSurveillancesBySessionId(this.sessionId);
+    } else {
+      surveillanceObservable = this.surveillanceService.getAllSurveillances();
+    }
+
+    surveillanceObservable.pipe(
+      catchError(error => {
+        const message = this.sessionId 
+          ? `Impossible de charger les surveillances pour la session ${this.sessionId}`
+          : 'Impossible de charger les surveillances';
+        this.showError(message);
         this.loading = false;
-      });
+        return throwError(() => error);
+      })
+    )
+    .subscribe(data => {
+      this.surveillances = data;
+      this.loading = false;
+      this.assignForm.reset();
+      this.selectedSurveillanceId = null;
+    });
   }
 
   loadEnseignants(): void {

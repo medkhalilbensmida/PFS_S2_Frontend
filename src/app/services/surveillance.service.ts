@@ -29,6 +29,27 @@ export interface AssignmentRequest {
   enseignantSecondaireId?: number;
 }
 
+export interface DisponibiliteEnseignantDTO {
+  id: number;
+  estDisponible: boolean;
+  enseignantId?: number;
+  enseignantNom?: string;
+  enseignantPrenom?: string;
+  surveillanceId?: number;
+}
+
+// Interface for the payload when CREATING a surveillance (with string dates)
+export interface CreateSurveillancePayload {
+  dateDebut: string;
+  dateFin: string;
+  statut: string;
+  salleId?: number | null;
+  matiereId?: number | null;
+  sessionExamenId: number;
+  enseignantPrincipalId?: number | null;
+  enseignantSecondaireId?: number | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -46,6 +67,13 @@ export class SurveillanceService {
   }
 
   /**
+   * Récupère les surveillances pour une session spécifique
+   */
+  getSurveillancesBySessionId(sessionId: number): Observable<Surveillance[]> {
+    return this.http.get<Surveillance[]>(`${this.apiUrl}/surveillances/session/${sessionId}`);
+  }
+
+  /**
    * Récupère une surveillance spécifique par son ID
    */
   getSurveillanceById(id: number): Observable<Surveillance> {
@@ -55,8 +83,8 @@ export class SurveillanceService {
   /**
    * Assigne des enseignants à une surveillance
    */
-  assignEnseignants(surveillanceId: number, request: AssignmentRequest): Observable<Surveillance> {
-    return this.http.put<Surveillance>(`${this.apiUrl}/surveillances/${surveillanceId}/assign`, request);
+  assignEnseignants(surveillanceId: number, request: AssignmentRequest): Observable<any> {
+    return this.http.put(`${this.apiUrl}/surveillances/${surveillanceId}/assign`, request, { responseType: 'text' });
   }
 
   /**
@@ -64,6 +92,24 @@ export class SurveillanceService {
    */
   getAllEnseignants(): Observable<Enseignant[]> {
     return this.http.get<Enseignant[]>(`${this.apiUrl}/enseignants`);
+  }
+
+  /**
+   * Crée une nouvelle surveillance
+   * Accepts payload with string dates
+   * Returns the created Surveillance object (which might have Date objects)
+   */
+  createSurveillance(surveillancePayload: CreateSurveillancePayload): Observable<Surveillance> {
+    // The payload sent matches CreateSurveillancePayload (string dates)
+    // The expected response type from the API is Surveillance (Date objects)
+    return this.http.post<Surveillance>(`${this.apiUrl}/surveillances`, surveillancePayload);
+  }
+
+  /**
+   * Supprime une surveillance par son ID
+   */
+  deleteSurveillance(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/surveillances/${id}`);
   }
 
   /**
@@ -86,5 +132,12 @@ export class SurveillanceService {
     if (!id) return 'Non affecté';
     const enseignant = enseignants.find(e => e.id === id);
     return enseignant ? `${enseignant.prenom} ${enseignant.nom}` : 'Inconnu';
+  }
+
+  /**
+   * Récupère la liste des disponibilités des enseignants pour une surveillance spécifique
+   */
+  getEnseignantDisponibilites(surveillanceId: number): Observable<DisponibiliteEnseignantDTO[]> {
+    return this.http.get<DisponibiliteEnseignantDTO[]>(`${this.apiUrl}/disponibilites/surveillance/${surveillanceId}`);
   }
 }

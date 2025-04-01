@@ -73,7 +73,13 @@
         <!-- Actions -->
         <div class="card-actions">
           <button mat-stroked-button color="primary" [routerLink]="['/apps/sessions/detail/', session.id]">
-            <mat-icon>visibility</mat-icon> Détails
+            <mat-icon>visibility</mat-icon> Voir Session
+          </button>
+          <button mat-stroked-button color="accent" [routerLink]="['/surveillance-assignment', session.id]">
+            <mat-icon>assignment_ind</mat-icon> Affecter Surveillances
+          </button>
+          <button mat-stroked-button color="accent" [routerLink]="['/surveillance-management', session.id]">
+            <mat-icon>manage_search</mat-icon> Voir Détails
           </button>
           
           @if(this.authService.isAdmin()) {

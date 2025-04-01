@@ -1,0 +1,53 @@
+<h2 mat-dialog-title>Affecter les Enseignants</h2>
+
+<form [formGroup]="assignForm" (ngSubmit)="onSubmit()">
+  <mat-dialog-content>
+    <div class="form-container">
+      <div class="info-section">
+        <h3>Informations de la surveillance</h3>
+        <div class="info-row">
+          <mat-icon>event</mat-icon>
+          <span>Début: {{ data.dateDebut | date:'medium' }}</span>
+        </div>
+        <div class="info-row">
+          <mat-icon>event_available</mat-icon>
+          <span>Fin: {{ data.dateFin | date:'medium' }}</span>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Enseignant Principal</mat-label>
+            <mat-select formControlName="enseignantPrincipalId">
+              <mat-option [value]="null">Non affecté</mat-option>
+              <mat-option *ngFor="let enseignant of availableEnseignants" [value]="enseignant.id">
+                {{ enseignant.prenom }} {{ enseignant.nom }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Enseignant Secondaire</mat-label>
+            <mat-select formControlName="enseignantSecondaireId">
+              <mat-option [value]="null">Non affecté</mat-option>
+              <mat-option *ngFor="let enseignant of availableEnseignants" [value]="enseignant.id">
+                {{ enseignant.prenom }} {{ enseignant.nom }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="onCancel()" [disabled]="loading">Annuler</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+      <mat-spinner *ngIf="loading" diameter="20" class="spinner-in-button"></mat-spinner>
+      <span *ngIf="!loading">Affecter</span>
+    </button>
+  </mat-dialog-actions>
+</form> 
