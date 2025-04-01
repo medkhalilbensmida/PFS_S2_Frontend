@@ -60,6 +60,7 @@ interface apps {
   encapsulation: ViewEncapsulation.None,
 })
 export class HeaderComponent implements OnInit {
+  
   @Input() showToggle = true;
   @Input() toggleChecked = false;
   @Output() toggleMobileNav = new EventEmitter<void>();
@@ -91,9 +92,10 @@ export class HeaderComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.userData = this.authService.getUserData();
+    this.authService.currentUser$.subscribe(user => {
+      this.userData = user;
+    });
   }
-
   options = this.settings.getOptions();
   
   setDark() {

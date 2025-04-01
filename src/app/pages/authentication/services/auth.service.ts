@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { catchError, Observable, tap, throwError } from 'rxjs';
+import { catchError, Observable, tap, throwError, BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CredentialsDto } from '../DTO/credentials.dto';
@@ -23,7 +23,19 @@ export class AuthService {
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
 
-  private currentUser: LoginResponseAdminDto | LoginResponseEnseignantDto | null = null;
+  private currentUserSubject = new BehaviorSubject<LoginResponseAdminDto | LoginResponseEnseignantDto | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
+
+  constructor() {
+    this.loadInitialUser();
+  }
+
+  private loadInitialUser(): void {
+    const userData = this.getUserData();
+    if (userData) {
+      this.currentUserSubject.next(userData);
+    }
+  }
 
   login(credentials: CredentialsDto): Observable<LoginResponseAdminDto | LoginResponseEnseignantDto> {
     return this.http.post<LoginResponseAdminDto | LoginResponseEnseignantDto>(
@@ -86,13 +98,22 @@ export class AuthService {
   }
 
   private handleLoginSuccess(response: LoginResponseAdminDto | LoginResponseEnseignantDto): void {
-    this.currentUser = response;
     localStorage.setItem(APP_CONST.tokenLocalStorageKey, response.token);
     localStorage.setItem(APP_CONST.userRoleLocalStorageKey, response.role);
     localStorage.setItem(APP_CONST.userDataLocalStorageKey, JSON.stringify(response));
+    this.currentUserSubject.next(response);
     
     this.snackBar.open('Connexion réussie', 'Fermer', { duration: 3000 });
     this.router.navigate([this.getRedirectRoute(response.role)]);
+  }
+
+  updateUserData(updatedData: any): void {
+    const currentUser = this.getUserData();
+    if (currentUser) {
+      const newUserData = { ...currentUser, ...updatedData };
+      localStorage.setItem(APP_CONST.userDataLocalStorageKey, JSON.stringify(newUserData));
+      this.currentUserSubject.next(newUserData);
+    }
   }
 
   private getRedirectRoute(role: string): string {
@@ -160,7 +181,7 @@ export class AuthService {
   }
 
   signOut(): void {
-    this.currentUser = null;
+    this.currentUserSubject.next(null);
     localStorage.removeItem(APP_CONST.tokenLocalStorageKey);
     localStorage.removeItem(APP_CONST.userRoleLocalStorageKey);
     localStorage.removeItem(APP_CONST.userDataLocalStorageKey);

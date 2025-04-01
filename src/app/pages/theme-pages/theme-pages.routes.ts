@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
 // theme pages
-import { AppAccountSettingComponent } from './account-setting/account-setting.component';
+import { AppAccountSettingComponent } from '../apps/account/components/account-setting/account-setting.component';
 import { AppFaqComponent } from './faq/faq.component';
 import { AppPricingComponent } from './pricing/pricing.component';
 import { AppTreeviewComponent } from './treeview/treeview.component';
@@ -14,12 +14,9 @@ export const ThemePagesRoutes: Routes = [
         path: 'account-setting',
         component: AppAccountSettingComponent,
         data: {
-          title: 'Account Setting',
+          title: 'Paramètres du compte',
           breadcrumb: true,
-          urls: [
-            { title: 'Dashboard', url: '/dashboards/dashboard1' },
-            { title: 'Account Setting' },
-          ],
+          urls: [],
         },
       },
       {

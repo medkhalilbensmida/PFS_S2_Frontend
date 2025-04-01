@@ -1,0 +1,67 @@
+.cardWithShadow {
+    box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+  }
+  
+  .theme-tab {
+    .mat-mdc-tab-header {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    }
+  
+    .mat-mdc-tab-body-content {
+      padding: 24px;
+    }
+  }
+  
+  .label-padding {
+    .mat-mdc-tab .mdc-tab__content {
+      padding: 0 16px;
+    }
+  }
+  
+  /* Espacements et utilitaires */
+  .p-0 { padding: 0 !important; }
+  .p-24 { padding: 24px !important; }
+  .p-t-0 { padding-top: 0 !important; }
+  .p-y-24 { padding-top: 24px; padding-bottom: 24px; }
+  .p-30 { padding: 30px !important; }
+  .m-r-8 { margin-right: 8px !important; }
+  .m-t-24 { margin-top: 24px !important; }
+  .m-b-8 { margin-bottom: 8px !important; }
+  .m-b-4 { margin-bottom: 4px !important; }
+  .m-l-8 { margin-left: 8px !important; }
+  .m-l-16 { margin-left: 16px !important; }
+  .m-l-auto { margin-left: auto !important; }
+  
+  /* Bordures */
+  .b-1 { border: 1px solid rgba(0, 0, 0, 0.12); }
+  .b-b-1 { border-bottom: 1px solid rgba(0, 0, 0, 0.12); }
+  
+  /* Arrondis */
+  .rounded { border-radius: 8px !important; }
+  .rounded-circle { border-radius: 50% !important; }
+  
+  /* Textes */
+  .f-s-14 { font-size: 14px !important; }
+  .f-s-16 { font-size: 16px !important; }
+  .f-w-600 { font-weight: 600 !important; }
+  .text-primary { color: #7467ee !important; }
+  .text-success { color: #4caf50 !important; }
+  .text-warn { color: #f44336 !important; }
+  .d-block { display: block !important; }
+  
+  /* Icônes */
+  .icon-20 { width: 20px; height: 20px; }
+  .icon-22 { width: 22px; height: 22px; }
+  .icon-48 { width: 48px; height: 48px; }
+  
+  /* Boutons */
+  .bg-light-primary { background-color: rgba(116, 103, 238, 0.1) !important; }
+  .shadow-none { box-shadow: none !important; }
+  
+  /* Layout */
+  .w-100 { width: 100% !important; }
+  .d-flex { display: flex !important; }
+  .align-items-center { align-items: center !important; }
+  .justify-content-center { justify-content: center !important; }
+  .hide-hint .mat-mdc-form-field-subscript-wrapper { display: none; }
