@@ -1,0 +1,59 @@
+<h2 mat-dialog-title>Ajouter une nouvelle surveillance</h2>
+
+<form [formGroup]="surveillanceForm" (ngSubmit)="onSubmit()">
+  <mat-dialog-content>
+    <div class="form-container">
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Date et heure de début</mat-label>
+          <input matInput formControlName="dateDebut" type="datetime-local">
+          <mat-error *ngIf="surveillanceForm.get('dateDebut')?.hasError('required')">
+            Date et heure de début requise
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Date et heure de fin</mat-label>
+          <input matInput formControlName="dateFin" type="datetime-local">
+          <mat-error *ngIf="surveillanceForm.get('dateFin')?.hasError('required')">
+            Date et heure de fin requise
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Salle</mat-label>
+          <mat-select formControlName="salleId">
+            <mat-option [value]="null">Non spécifiée</mat-option>
+            <mat-option *ngFor="let salle of salles" [value]="salle.id">
+              {{ salle.nom }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Matière</mat-label>
+          <mat-select formControlName="matiereId">
+            <mat-option [value]="null">Non spécifiée</mat-option>
+            <mat-option *ngFor="let matiere of matieres" [value]="matiere.id">
+              {{ matiere.nom }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="onCancel()" [disabled]="loading">Annuler</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="surveillanceForm.invalid || loading">
+      <mat-spinner *ngIf="loading" diameter="20" class="spinner-in-button"></mat-spinner>
+      <span *ngIf="!loading">Ajouter</span>
+    </button>
+  </mat-dialog-actions>
+</form> 

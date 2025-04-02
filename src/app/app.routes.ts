@@ -3,6 +3,7 @@ import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
 import { AuthGuard } from './pages/authentication/guards/auth.guard';
 import { SurveillanceAssignmentComponent } from './components/surveillance-assignment/surveillance-assignment.component';
+import { SurveillanceManagementComponent } from './components/surveillance-management/surveillance-management.component';
 
 export const routes: Routes = [
   {
@@ -16,13 +17,37 @@ export const routes: Routes = [
         pathMatch: 'full',
       },
       {
+        path: 'surveillance-management/:sessionId',
+        component: SurveillanceManagementComponent,
+        data: {
+          title: 'Gestion des Surveillances',
+          urls: [
+            { title: 'Dashboard', url: '/dashboards/dashboard1' },
+            { title: 'Sessions', url: '/apps/courses/session-list' },
+            { title: 'Gestion des Surveillances' },
+          ],
+        },
+      },
+      {
         path: 'surveillance-assignment',
         component: SurveillanceAssignmentComponent,
         data: {
           title: 'Affectation des Surveillances',
           urls: [
             { title: 'Dashboard', url: '/dashboards/dashboard1' },
-            { title: 'Affectation des Surveillances' },
+            { title: 'Affectation des Surveillances (Toutes)' },
+          ],
+        },
+      },
+      {
+        path: 'surveillance-assignment/:sessionId',
+        component: SurveillanceAssignmentComponent,
+        data: {
+          title: 'Affectation - Session Spécifique',
+          urls: [
+            { title: 'Dashboard', url: '/dashboards/dashboard1' },
+            { title: 'Sessions', url: '/apps/courses/session-list' },
+            { title: 'Affectation Surveillances' },
           ],
         },
       },

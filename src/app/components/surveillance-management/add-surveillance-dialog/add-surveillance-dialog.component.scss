@@ -1,0 +1,25 @@
+.form-container {
+  display: flex;
+  flex-direction: column;
+  min-width: 300px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.form-row {
+  margin-bottom: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.mat-mdc-dialog-content {
+  max-height: 65vh;
+  overflow-y: auto;
+}
+
+.spinner-in-button {
+  display: inline-block;
+  margin-right: 8px;
+} 
