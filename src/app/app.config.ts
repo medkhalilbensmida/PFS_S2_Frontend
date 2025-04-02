@@ -1,3 +1,6 @@
+import { CalendarModule, DateAdapter } from 'angular-calendar';
+import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
+
 import {
   ApplicationConfig,
   provideZoneChangeDetection,
@@ -147,6 +150,10 @@ export const appConfig: ApplicationConfig = {
         },
         defaultLanguage: 'fr',
         isolate: false
+      }),
+      CalendarModule.forRoot({
+        provide: DateAdapter,
+        useFactory: adapterFactory
       })
     ),
     // Register the existing interceptor
