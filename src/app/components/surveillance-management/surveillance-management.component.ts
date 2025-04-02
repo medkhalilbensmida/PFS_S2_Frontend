@@ -9,6 +9,7 @@ import { MaterialModule } from '../../material.module';
 import { CommonModule } from '@angular/common';
 import { AddSurveillanceDialogComponent } from './add-surveillance-dialog/add-surveillance-dialog.component';
 import { AssignEnseignantDialogComponent } from './assign-enseignant-dialog/assign-enseignant-dialog.component';
+import { UpdateSurveillanceDialogComponent } from './update-surveillance-dialog/update-surveillance-dialog.component';
 
 @Component({
   selector: 'app-surveillance-management',
@@ -113,6 +114,27 @@ export class SurveillanceManagementComponent implements OnInit {
         salleName: surveillance.salleName,
         matiereName: surveillance.matiereName,
         statut: surveillance.statut
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadSurveillances();
+      }
+    });
+  }
+
+  openUpdateSurveillanceDialog(surveillance: Surveillance): void {
+    const dialogRef = this.dialog.open(UpdateSurveillanceDialogComponent, {
+      width: '600px',
+      data: {
+        id: surveillance.id,
+        dateDebut: surveillance.dateDebut,
+        dateFin: surveillance.dateFin,
+        statut: surveillance.statut,
+        salleId: surveillance.salleId,
+        matiereId: surveillance.matiereId,
+        sessionExamenId: this.sessionId
       }
     });
 
