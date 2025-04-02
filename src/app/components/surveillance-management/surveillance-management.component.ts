@@ -109,7 +109,10 @@ export class SurveillanceManagementComponent implements OnInit {
         currentPrincipalId: surveillance.enseignantPrincipalId,
         currentSecondaireId: surveillance.enseignantSecondaireId,
         dateDebut: surveillance.dateDebut,
-        dateFin: surveillance.dateFin
+        dateFin: surveillance.dateFin,
+        salleName: surveillance.salleName,
+        matiereName: surveillance.matiereName,
+        statut: surveillance.statut
       }
     });
 

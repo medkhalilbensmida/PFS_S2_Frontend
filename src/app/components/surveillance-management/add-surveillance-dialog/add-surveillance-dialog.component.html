@@ -25,6 +25,20 @@
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Statut</mat-label>
+          <mat-select formControlName="statut" required>
+            <mat-option *ngFor="let status of statutOptions" [value]="status">
+              {{ status }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="surveillanceForm.get('statut')?.hasError('required')">
+            Statut requis
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
           <mat-label>Salle</mat-label>
           <mat-select formControlName="salleId">
             <mat-option [value]="null">Non spécifiée</mat-option>
