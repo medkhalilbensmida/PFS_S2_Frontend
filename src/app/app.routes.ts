@@ -4,6 +4,7 @@ import { FullComponent } from './layouts/full/full.component';
 import { AuthGuard } from './pages/authentication/guards/auth.guard';
 import { SurveillanceAssignmentComponent } from './components/surveillance-assignment/surveillance-assignment.component';
 import { SurveillanceManagementComponent } from './components/surveillance-management/surveillance-management.component';
+import { AppAvailabilitycalendarComponent } from './components/availability-calendar/availabilitycalendar.component';
 
 export const routes: Routes = [
   {
@@ -27,6 +28,17 @@ export const routes: Routes = [
             { title: 'Gestion des Surveillances' },
           ],
         },
+      },
+      {
+        path: 'availability-calendar',
+        component: AppAvailabilitycalendarComponent,
+        data: {
+          title: 'Disponibilités des Surveillances',
+          urls: [
+            { title: 'Dashboard', url: '/dashboards/dashboard1' },
+            { title: 'Disponibilités des Surveillances' }
+          ]
+        }
       },
       {
         path: 'surveillance-assignment',

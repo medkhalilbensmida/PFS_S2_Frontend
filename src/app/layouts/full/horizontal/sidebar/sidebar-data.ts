@@ -32,6 +32,11 @@ export const navItems: NavItem[] = [
     route: 'surveillance-assignment',
     children: [
       {
+        displayName: 'Mes Disponibilités',
+        iconName: 'solar:calendar-line-duotone',
+        route: 'availability-calendar',
+      },
+      {
         displayName: 'Affectation des Surveillances',
         iconName: 'solar:user-hand-up-linear',
         route: 'surveillance-assignment',
