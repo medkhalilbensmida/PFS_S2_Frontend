@@ -25,6 +25,7 @@ import { MatButtonModule } from '@angular/material/button';
     MatButtonModule
   ],
   templateUrl: './register.component.html',
+  styleUrls: ['./register.component.scss'],
 })
 export class AppBoxedRegisterComponent {
   currentForm: 'admin' | 'enseignant' = 'enseignant';
