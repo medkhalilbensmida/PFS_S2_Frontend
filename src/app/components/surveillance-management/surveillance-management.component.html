@@ -33,13 +33,13 @@
           <!-- Salle Column -->
           <ng-container matColumnDef="salle">
             <mat-header-cell *matHeaderCellDef>Salle</mat-header-cell>
-            <mat-cell *matCellDef="let surveillance">{{ surveillance.salleId || 'Non spécifiée' }}</mat-cell>
+            <mat-cell *matCellDef="let surveillance">{{ surveillance.salleName || surveillance.salleId || 'Non spécifiée' }}</mat-cell>
           </ng-container>
           
           <!-- Matière Column -->
           <ng-container matColumnDef="matiere">
             <mat-header-cell *matHeaderCellDef>Matière</mat-header-cell>
-            <mat-cell *matCellDef="let surveillance">{{ surveillance.matiereId || 'Non spécifiée' }}</mat-cell>
+            <mat-cell *matCellDef="let surveillance">{{ surveillance.matiereName || surveillance.matiereId || 'Non spécifiée' }}</mat-cell>
           </ng-container>
           
           <!-- Enseignant Principal Column -->

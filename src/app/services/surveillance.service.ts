@@ -13,6 +13,8 @@ export interface Surveillance {
   enseignantPrincipalId?: number;
   enseignantSecondaireId?: number;
   sessionExamenId?: number;
+  salleName?: string;
+  matiereName?: string;
 }
 
 export interface Enseignant {
