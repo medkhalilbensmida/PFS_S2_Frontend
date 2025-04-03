@@ -12,9 +12,11 @@ import { TablerIconsModule } from 'angular-tabler-icons';
 import { ProfileService } from '../../services/profile.service';
 import { AuthService } from '../../../../authentication/services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { DefaultImageDialogComponent } from '../default-images-dialog/default-images-dialog.component';
 
 @Component({
   selector: 'app-account-setting',
@@ -42,9 +44,11 @@ export class AppAccountSettingComponent implements OnInit {
   profileData: any;
   isLoading = false;
   originalEmail: string = '';
-  profileImage: string = '/assets/images/profile/user-1.jpg';
+  profileImage: string;
+  signatureImage: string;
 
   constructor(
+    private dialog: MatDialog,
     private fb: FormBuilder,
     private profileService: ProfileService,
     public authService: AuthService,
@@ -79,7 +83,8 @@ export class AppAccountSettingComponent implements OnInit {
       next: (data) => {
         this.profileData = data;
         this.profileForm.patchValue(data);
-        this.originalEmail = data.email;
+        this.profileImage = data.photoProfil;
+        this.signatureImage = data.signature; // Charger la signature pour les admins
         this.isLoading = false;
       },
       error: (error) => {
@@ -89,6 +94,107 @@ export class AppAccountSettingComponent implements OnInit {
       }
     });
   }
+
+  onFileSelected(event: any, type: 'profile' | 'signature'): void {
+    const file: File = event.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      let endpoint = '';
+      if (type === 'profile') {
+        formData.append('userId', this.profileData.id.toString());
+        formData.append('userType', this.authService.isAdmin() ? 'ADMIN' : 'ENSEIGNANT');
+        endpoint = '/api/files/upload-profile';
+      } else {
+        formData.append('adminId', this.profileData.id.toString());
+        endpoint = '/api/files/upload-signature';
+      }
+
+      this.isLoading = true;
+      this.http.post(endpoint, formData).subscribe({
+        next: (response: any) => {
+          if (type === 'profile') {
+            this.profileImage = response.filePath;
+          } else {
+            this.signatureImage = response.filePath;
+          }
+          this.loadProfile(); // Recharger le profil pour mettre à jour les données
+          this.snackBar.open(type === 'profile' ? 'Photo mise à jour' : 'Signature mise à jour', 'Fermer', { duration: 3000 });
+        },
+        error: (error) => {
+          console.error(`Error uploading ${type} image:`, error);
+          this.snackBar.open(`Erreur lors du téléchargement ${type === 'profile' ? 'de la photo' : 'de la signature'}`, 'Fermer', { duration: 3000 });
+          this.isLoading = false;
+        }
+      });
+    }
+  }
+
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = '/assets/images/profile/user-1.jpg';
+  }
+
+  handleSignatureError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = '/assets/images/signatures/default-signature.png';
+  }
+  openDefaultImagesDialog(): void {
+    this.http.get('/api/files/default-profiles', { 
+        headers: new HttpHeaders({
+            'Authorization': `Bearer ${this.authService.getToken()}`
+        })
+    }).subscribe({
+        next: (images: any) => {
+            const dialogRef = this.dialog.open(DefaultImageDialogComponent, {
+                data: { images }
+            });
+
+            dialogRef.afterClosed().subscribe(selectedImage => {
+                if (selectedImage) {
+                    this.selectDefaultImage(selectedImage);
+                }
+            });
+        },
+        error: (error) => {
+            console.error('Error loading default images:', error);
+            this.snackBar.open('Erreur lors du chargement des images par défaut', 'Fermer', { duration: 3000 });
+        }
+    });
+}
+
+selectDefaultImage(imageName: string): void {
+    const userData = this.authService.getUserData();
+    if (!userData) {
+        console.error('User data is null');
+        this.snackBar.open('Erreur : données utilisateur introuvables', 'Fermer', { duration: 3000 });
+        return;
+    }
+    const request = {
+        imageName: imageName,
+        userId: userData.id,
+        userType: this.authService.isAdmin() ? 'ADMIN' : 'ENSEIGNANT'
+    };
+
+    this.isLoading = true;
+    this.http.post('/api/files/select-default-profile', request, {
+        headers: new HttpHeaders({
+            'Authorization': `Bearer ${this.authService.getToken()}`
+        })
+    }).subscribe({
+        next: (response: any) => {
+            this.profileImage = response.filePath;
+            this.loadProfile();
+            this.snackBar.open('Photo de profil mise à jour avec succès', 'Fermer', { duration: 3000 });
+        },
+        error: (error) => {
+            console.error('Error selecting default image:', error);
+            this.snackBar.open('Erreur lors de la sélection de l\'image', 'Fermer', { duration: 3000 });
+            this.isLoading = false;
+        }
+    });
+}
 
   onSubmit(): void {
     if (this.profileForm.valid && !this.isLoading) {

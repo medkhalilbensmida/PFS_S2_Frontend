@@ -31,7 +31,11 @@ export class ProfileService {
       endpoint = `/api/enseignants/${userId}`;
     }
 
-    return this.http.get(endpoint, { headers: this.getHeaders() });
+    return this.http.get(endpoint, { 
+      headers: new HttpHeaders({
+        'Authorization': `Bearer ${this.authService.getToken()}`
+      })
+    });
   }
 
   updateProfile(profileData: any): Observable<any> {
