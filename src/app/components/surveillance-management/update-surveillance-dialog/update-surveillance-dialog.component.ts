@@ -129,11 +129,27 @@ export class UpdateSurveillanceDialogComponent implements OnInit {
       .pipe(
         catchError((error) => {
           let errorMsg = 'Erreur lors de la mise à jour de la surveillance.';
-          if (error.error && typeof error.error === 'string') {
-            errorMsg = error.error;
+          
+          // Handle both old and new error response formats
+          if (error.error) {
+            if (typeof error.error === 'object' && error.error.message) {
+              // New error format with ErrorResponse object
+              errorMsg = error.error.message;
+              if (errorMsg === "Il existe deja une surveillance dans cette salle pendant cette periode.") {
+                errorMsg = "Il existe déjà une surveillance dans cette salle pendant cette période.";
+              }
+            } else if (typeof error.error === 'string') {
+              // Old error format (string)
+              errorMsg = error.error;
+              // Handle the non-accented version if received
+              if (errorMsg === "Il existe deja une surveillance dans cette salle pendant cette periode.") {
+                errorMsg = "Il existe déjà une surveillance dans cette salle pendant cette période.";
+              }
+            }
           } else if (error.message) {
             errorMsg = error.message;
           }
+          
           this.showError(errorMsg);
           return throwError(() => error);
         }),
