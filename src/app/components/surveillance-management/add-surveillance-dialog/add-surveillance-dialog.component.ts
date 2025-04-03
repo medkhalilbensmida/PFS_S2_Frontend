@@ -62,6 +62,7 @@ export class AddSurveillanceDialogComponent implements OnInit {
   loading = false;
   salles: any[] = []; // This would normally be loaded from a service
   matieres: any[] = []; // This would normally be loaded from a service
+  statutOptions: string[] = ['PLANIFIEE', 'EN_COURS', 'TERMINEE', 'ANNULEE'];
 
   constructor(
     private fb: FormBuilder,
@@ -73,6 +74,7 @@ export class AddSurveillanceDialogComponent implements OnInit {
     this.surveillanceForm = this.fb.group({
       dateDebut: ['', Validators.required],
       dateFin: ['', Validators.required],
+      statut: ['PLANIFIEE', Validators.required],
       salleId: [''],
       matiereId: ['']
     });
@@ -92,6 +94,20 @@ export class AddSurveillanceDialogComponent implements OnInit {
       { id: 2, nom: 'Physique' },
       { id: 3, nom: 'Informatique' }
     ];
+  }
+  
+  getSalleName(): string | undefined {
+    const salleId = this.surveillanceForm.get('salleId')?.value;
+    if (!salleId) return undefined;
+    const salle = this.salles.find(s => s.id === salleId);
+    return salle ? salle.nom : undefined;
+  }
+  
+  getMatiereName(): string | undefined {
+    const matiereId = this.surveillanceForm.get('matiereId')?.value;
+    if (!matiereId) return undefined;
+    const matiere = this.matieres.find(m => m.id === matiereId);
+    return matiere ? matiere.nom : undefined;
   }
 
   onSubmit(): void {
@@ -115,18 +131,17 @@ export class AddSurveillanceDialogComponent implements OnInit {
         return;
     }
 
-    // Construct the payload with formatted dates and statut
-    // Use the specific payload type
+    // Construct the payload with formatted dates and statut from form
     const surveillance: CreateSurveillancePayload = {
       salleId: formValue.salleId || null, 
       matiereId: formValue.matiereId || null, 
       dateDebut: formattedDateDebut!, // Use non-null assertion as we checked above
       dateFin: formattedDateFin!,     // Use non-null assertion as we checked above
       sessionExamenId: this.data.sessionId,
-      statut: 'PLANIFIEE' 
+      statut: formValue.statut
     };
 
-    // Call the service - no cast needed now
+    // Call the service
     this.surveillanceService.createSurveillance(surveillance)
       .pipe(
         catchError(error => {

@@ -11,21 +11,25 @@
   padding: 16px;
   border-radius: 4px;
   margin-bottom: 24px;
+  border-left: 4px solid #3f51b5;
 
   h3 {
     margin: 0 0 16px 0;
-    color: rgba(0, 0, 0, 0.87);
+    color: #3f51b5;
+    font-weight: 500;
   }
 }
 
 .info-row {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
-  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 12px;
+  color: rgba(0, 0, 0, 0.7);
+  font-size: 14px;
 
   mat-icon {
     margin-right: 8px;
+    color: #3f51b5;
   }
 }
 

@@ -13,6 +13,18 @@
           <mat-icon>event_available</mat-icon>
           <span>Fin: {{ data.dateFin | date:'medium' }}</span>
         </div>
+        <div class="info-row" *ngIf="data.salleName">
+          <mat-icon>room</mat-icon>
+          <span>Salle: {{ data.salleName }}</span>
+        </div>
+        <div class="info-row" *ngIf="data.matiereName">
+          <mat-icon>book</mat-icon>
+          <span>Matière: {{ data.matiereName }}</span>
+        </div>
+        <div class="info-row" *ngIf="data.statut">
+          <mat-icon>info</mat-icon>
+          <span>Statut: {{ data.statut }}</span>
+        </div>
       </div>
 
       <div class="form-section">

@@ -18,6 +18,9 @@ interface DialogData {
   currentSecondaireId?: number;
   dateDebut: Date;
   dateFin: Date;
+  salleName?: string;
+  matiereName?: string;
+  statut?: string;
 }
 
 @Component({
