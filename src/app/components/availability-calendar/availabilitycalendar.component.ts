@@ -1,8 +1,14 @@
+
+import { map, catchError, finalize } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
+import { SurveillanceService, Surveillance } from '../../services/surveillance.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   Component,
   ChangeDetectionStrategy,
   Inject,
   TemplateRef,
+  OnInit,
 } from '@angular/core';
 import { CommonModule, DOCUMENT, NgSwitch } from '@angular/common';
 import {
@@ -105,7 +111,7 @@ export class CalendarDialogComponent {
   ],
   providers: [provideNativeDateAdapter(), CalendarDateFormatter],
 })
-export class AppAvailabilitycalendarComponent {
+export class AppAvailabilitycalendarComponent implements OnInit {
   dialogRef: MatDialogRef<CalendarDialogComponent> = Object.create(TemplateRef);
   dialogRef2: MatDialogRef<CalendarFormDialogComponent> =
     Object.create(TemplateRef);
@@ -152,7 +158,7 @@ export class AppAvailabilitycalendarComponent {
   refresh: Subject<any> = new Subject();
 
   events: CalendarEvent[] = [
-    {
+    /*{
       start: subDays(startOfDay(new Date()), 1),
       end: addDays(new Date(), 1),
       title: 'A 3 day event',
@@ -182,12 +188,27 @@ export class AppAvailabilitycalendarComponent {
         afterEnd: true,
       },
       draggable: true,
-    },
+    },*/
   ];
 
   activeDayIsOpen = true;
+  surveillances: Surveillance[] = [];
+  disponibilites: Map<number, boolean> = new Map();
+  loading = false;
 
-  constructor(public dialog: MatDialog, @Inject(DOCUMENT) doc: any) { }
+  constructor(
+    private dialog: MatDialog,
+    @Inject(DOCUMENT) private document: Document,
+    private surveillanceService: SurveillanceService,
+    private snackBar: MatSnackBar
+  ) {}
+
+    /*--------------*/
+    ngOnInit() {
+      // ...existing calendar init code...
+      this.loadSurveillances();
+    }
+    /*--------------*/
 
   dayClicked({ date, events }: { date: Date; events: CalendarEvent[] }): void {
     if (isSameMonth(date, this.viewDate)) {
@@ -223,15 +244,11 @@ export class AppAvailabilitycalendarComponent {
   }
 
   handleEvent(action: string, event: CalendarEvent): void {
-    this.config.data = { event, action };
-    this.dialogRef = this.dialog.open(CalendarDialogComponent, this.config);
-
-    this.dialogRef.afterClosed().subscribe((result: string) => {
-      this.lastCloseResult = result;
-      this.dialogRef = Object.create(null);
-      this.refresh.next(result);
-    });
+    if (event.meta?.surveillance) {
+      this.toggleDisponibilite(event.meta.surveillance.id);
+    }
   }
+  
 
   addEvent(): void {
     this.dialogRef2 = this.dialog.open(CalendarFormDialogComponent, {
@@ -261,4 +278,124 @@ export class AppAvailabilitycalendarComponent {
   setView(view: CalendarView): void {
     this.view = view;
   }
+
+
+
+  /*--------------*/
+  loadSurveillances() {
+    this.loading = true;
+    this.surveillanceService.getAllSurveillances()
+      .pipe(
+        finalize(() => this.loading = false)
+      )
+      .subscribe({
+        next: (surveillances) => {
+          console.log('Loaded surveillances:', surveillances);
+          this.surveillances = surveillances;
+          this.loadDisponibilites();
+        },
+        error: (error) => {
+          console.error('Error loading surveillances:', error);
+          this.showError('Erreur lors du chargement des surveillances');
+        }
+      });
+  }
+
+  loadDisponibilites() {
+    if (!this.surveillances.length) {
+      return;
+    }
+
+    const disponibiliteChecks = this.surveillances.map(surveillance =>
+      this.surveillanceService.checkDisponibilite(surveillance.id).pipe(
+        map(isDisponible => ({ surveillanceId: surveillance.id, isDisponible }))
+      )
+    );
+
+    forkJoin(disponibiliteChecks)
+      .subscribe({
+        next: (results) => {
+          results.forEach(result => {
+            this.disponibilites.set(result.surveillanceId, result.isDisponible);
+          });
+          this.updateCalendarEvents();
+        },
+        error: (error) => {
+          console.error('Error checking disponibilites:', error);
+          this.showError('Erreur lors de la vérification des disponibilités');
+        }
+      });
+  }
+
+  createEventTitle(surveillance: Surveillance): string {
+    const salle = surveillance.salleId ? `Salle ${surveillance.salleId}` : 'Salle non définie';
+    const matiere = surveillance.matiereId ? `Matière ${surveillance.matiereId}` : 'Matière non définie';
+    const status = this.disponibilites.get(surveillance.id) ? '(Disponible)' : '(Non disponible)';
+    return `Surveillance ${surveillance.id} ${status}\n${salle}\n${matiere}`;
+  }
+
+  updateCalendarEvents() {
+    this.events = this.surveillances.map(surveillance => ({
+      id: surveillance.id,
+      start: new Date(surveillance.dateDebut),
+      end: new Date(surveillance.dateFin),
+      title: this.createEventTitle(surveillance),
+      color: this.disponibilites.get(surveillance.id) ? colors.blue : colors.yellow,
+      actions: [{
+        label: `<mat-icon>${this.disponibilites.get(surveillance.id) ? 'clear' : 'check'}</mat-icon>`,
+        onClick: ({ event }: { event: CalendarEvent }): void => {
+          this.toggleDisponibilite(surveillance.id);
+        }
+      }],
+      meta: {
+        surveillance,
+        isDisponible: this.disponibilites.get(surveillance.id)
+      }
+    }));
+    this.refresh.next(null);
+  }
+
+  toggleDisponibilite(surveillanceId: number) {
+    const isCurrentlyDisponible = this.disponibilites.get(surveillanceId);
+    
+    const action = isCurrentlyDisponible 
+      ? this.surveillanceService.cancelDisponibilite(surveillanceId)
+      : this.surveillanceService.markDisponibilite(surveillanceId);
+
+    action.subscribe({
+      next: () => {
+        this.disponibilites.set(surveillanceId, !isCurrentlyDisponible);
+        this.updateCalendarEvents();
+        this.showSuccess(isCurrentlyDisponible 
+          ? 'Disponibilité annulée' 
+          : 'Disponibilité marquée'
+        );
+      },
+      error: (error) => {
+        this.showError('Erreur lors de la modification de la disponibilité');
+        console.error(error);
+      }
+    });
+  }
+
+  /*handleEvent(action: string, { event }: { event: CalendarEvent }): void {
+    if (event.meta?.surveillance) {
+      this.toggleDisponibilite(event.meta.surveillance.id);
+    }
+  }*/
+
+  private showSuccess(message: string): void {
+    this.snackBar.open(message, 'Fermer', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Fermer', {
+      duration: 5000,
+      panelClass: ['error-snackbar']
+    });
+  }
+
 }
