@@ -39,6 +39,11 @@ export const navItems: NavItem[] = [
     ],
   },
   {
+    displayName: 'Account Setting',
+    iconName: 'solar:round-alt-arrow-right-line-duotone',
+    route: 'theme-pages/account-setting',
+  },
+  {
     displayName: 'Apps',
     iconName: 'solar:archive-minimalistic-line-duotone',
     route: 'apps',
@@ -226,11 +231,6 @@ export const navItems: NavItem[] = [
         displayName: 'Pricing',
         iconName: 'solar:round-alt-arrow-right-line-duotone',
         route: 'theme-pages/pricing',
-      },
-      {
-        displayName: 'Account Setting',
-        iconName: 'solar:round-alt-arrow-right-line-duotone',
-        route: 'theme-pages/account-setting',
       },
       {
         displayName: 'FAQ',

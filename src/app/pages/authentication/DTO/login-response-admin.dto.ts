@@ -7,4 +7,5 @@ export interface LoginResponseAdminDto {
   email: string;
   telephone: string;
   fonction: string;
+  photoProfil?: string;
 }

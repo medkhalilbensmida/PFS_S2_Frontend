@@ -8,4 +8,5 @@ export interface LoginResponseEnseignantDto {
     telephone: string;
     grade: string;
     departement: string;
+    photoProfil?: string;
   }

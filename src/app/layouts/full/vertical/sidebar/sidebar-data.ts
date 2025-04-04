@@ -30,6 +30,15 @@ export const navItems: NavItem[] = [
   },
   {
     divider: true,
+    navCap: 'Gestion de Compte',
+  },
+  {
+    displayName: 'Account Setting',
+    iconName: 'solar:accessibility-line-duotone',
+    route: 'theme-pages/account-setting',
+  },
+  {
+    divider: true,
     navCap: 'Apps',
   },
   {
@@ -125,11 +134,6 @@ export const navItems: NavItem[] = [
     displayName: 'Pricing',
     iconName: 'solar:dollar-minimalistic-line-duotone',
     route: 'theme-pages/pricing',
-  },
-  {
-    displayName: 'Account Setting',
-    iconName: 'solar:accessibility-line-duotone',
-    route: 'theme-pages/account-setting',
   },
   {
     displayName: 'FAQ',
