@@ -1,0 +1,26 @@
+.form-container {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+}
+
+.form-row {
+  margin-bottom: 15px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.spinner-in-button {
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+mat-dialog-content {
+  min-height: 200px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+

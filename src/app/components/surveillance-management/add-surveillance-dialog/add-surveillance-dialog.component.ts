@@ -62,6 +62,7 @@ export class AddSurveillanceDialogComponent implements OnInit {
   loading = false;
   salles: any[] = []; // This would normally be loaded from a service
   matieres: any[] = []; // This would normally be loaded from a service
+  statutOptions: string[] = ['PLANIFIEE', 'EN_COURS', 'TERMINEE', 'ANNULEE'];
 
   constructor(
     private fb: FormBuilder,
@@ -73,6 +74,7 @@ export class AddSurveillanceDialogComponent implements OnInit {
     this.surveillanceForm = this.fb.group({
       dateDebut: ['', Validators.required],
       dateFin: ['', Validators.required],
+      statut: ['PLANIFIEE', Validators.required],
       salleId: [''],
       matiereId: ['']
     });
@@ -92,6 +94,20 @@ export class AddSurveillanceDialogComponent implements OnInit {
       { id: 2, nom: 'Physique' },
       { id: 3, nom: 'Informatique' }
     ];
+  }
+  
+  getSalleName(): string | undefined {
+    const salleId = this.surveillanceForm.get('salleId')?.value;
+    if (!salleId) return undefined;
+    const salle = this.salles.find(s => s.id === salleId);
+    return salle ? salle.nom : undefined;
+  }
+  
+  getMatiereName(): string | undefined {
+    const matiereId = this.surveillanceForm.get('matiereId')?.value;
+    if (!matiereId) return undefined;
+    const matiere = this.matieres.find(m => m.id === matiereId);
+    return matiere ? matiere.nom : undefined;
   }
 
   onSubmit(): void {
@@ -115,36 +131,47 @@ export class AddSurveillanceDialogComponent implements OnInit {
         return;
     }
 
-    // Construct the payload with formatted dates and statut
-    // Use the specific payload type
+    // Construct the payload with formatted dates and statut from form
     const surveillance: CreateSurveillancePayload = {
       salleId: formValue.salleId || null, 
       matiereId: formValue.matiereId || null, 
       dateDebut: formattedDateDebut!, // Use non-null assertion as we checked above
       dateFin: formattedDateFin!,     // Use non-null assertion as we checked above
       sessionExamenId: this.data.sessionId,
-      statut: 'PLANIFIEE' 
+      statut: formValue.statut
     };
 
-    // Call the service - no cast needed now
+    // Call the service
     this.surveillanceService.createSurveillance(surveillance)
       .pipe(
         catchError(error => {
           // Log the detailed error from the backend
           console.error('Backend error:', error);
           let errorMsg = 'Erreur lors de la création de la surveillance.';
-          // Try to get a more specific message from the error response
-          if (error.error && typeof error.error === 'string') {
-             try {
-                const parsedError = JSON.parse(error.error);
-                if(parsedError.message) errorMsg = parsedError.message;
-             } catch(e) { /* Ignore if not JSON */ }
+          
+          // Handle both old and new error response formats
+          if (error.error) {
+            if (typeof error.error === 'object' && error.error.message) {
+              // New error format with ErrorResponse object
+              errorMsg = error.error.message;
+              if (errorMsg === "Il existe deja une surveillance dans cette salle pendant cette periode.") {
+                errorMsg = "Il existe déjà une surveillance dans cette salle pendant cette période.";
+              }
+            } else if (typeof error.error === 'string') {
+              // Old error format (string)
+              errorMsg = error.error;
+              // Handle the non-accented version if received
+              if (errorMsg === "Il existe deja une surveillance dans cette salle pendant cette periode.") {
+                errorMsg = "Il existe déjà une surveillance dans cette salle pendant cette période.";
+              }
+            }
           } else if (error.message) {
             errorMsg = error.message;
           }
+          
           this.showError(errorMsg);
           this.loading = false;
-          return throwError(() => new Error(errorMsg)); // Pass a new error for potential downstream handling
+          return throwError(() => new Error(errorMsg));
         })
       )
       .subscribe(() => {
