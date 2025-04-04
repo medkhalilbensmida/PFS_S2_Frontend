@@ -5,154 +5,209 @@
       animationDuration="0ms"
       class="theme-tab label-padding"
     >
-<!-- Onglet Profil -->
-<mat-tab>
-  <ng-template mat-tab-label>
-    <div class="d-flex align-items-center">
-      <mat-icon>
-        <i-tabler name="user-circle" class="icon-20 m-r-8"></i-tabler>
-      </mat-icon>
-      Compte
-    </div>
-  </ng-template>
-  <mat-card-content>
-    <div class="row">
-      <div class="col-sm-6">
-        <div class="b-1 rounded p-30">
-          <mat-card-title>Photo de profil</mat-card-title>
-          <mat-card-subtitle class="mat-body-1"
-            >Votre photo de profil</mat-card-subtitle
-          >
-          <div class="text-center m-t-24">
-            <img
-              [src]="profileImage"
-              class="rounded-circle"
-              width="120"
-              height="120"
-            />
-            <div class="m-t-24">
-              <button mat-flat-button color="primary" class="m-r-8" disabled>
-                <mat-icon>upload</mat-icon>
-                Télécharger (bientôt disponible)
-              </button>
+      <!-- Onglet Profil -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <div class="d-flex align-items-center">
+            <mat-icon>
+              <i-tabler name="user-circle" class="icon-20 m-r-8"></i-tabler>
+            </mat-icon>
+            Compte
+          </div>
+        </ng-template>
+        <mat-card-content>
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="b-1 rounded p-30">
+                <mat-card-title>Photo de profil</mat-card-title>
+                <mat-card-subtitle class="mat-body-1"
+                  >Votre photo de profil</mat-card-subtitle
+                >
+                <div class="text-center m-t-24">
+                  <ng-container *ngIf="profileImage; else defaultProfileImage">
+                    <img
+                      [src]="profileImage"
+                      class="rounded-circle"
+                      width="120"
+                      height="120"
+                      (error)="handleImageError($event)"
+                    />
+                  </ng-container>
+                  <ng-template #defaultProfileImage>
+                    <div class="no-signature-message">
+                      <p>Veuillez insérer votre photo de profil</p>
+                    </div>
+                  </ng-template>
+                  <div class="m-t-24">
+                    <input type="file" #fileInput style="display: none" 
+                          (change)="onFileSelected($event, 'profile')" accept="image/*">
+                    <button mat-flat-button color="primary" class="m-r-8" (click)="fileInput.click()">
+                      <mat-icon>upload</mat-icon>
+                      @if (!profileImage) {
+                        Ajouter une photo
+                      } @else {
+                        Changer la photo
+                      }
+                    </button>
+                    <button mat-flat-button color="warn" (click)="openDefaultImagesDialog()">
+                      <mat-icon>photo_library</mat-icon>
+                      Choisir une image par défaut
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section Signature (visible seulement pour les admins) -->
+              <div class="b-1 rounded p-30 m-t-24 m" *ngIf="authService.isAdmin()">
+                <mat-card-title>Signature</mat-card-title>
+                <mat-card-subtitle class="mat-body-1"
+                  >Votre signature</mat-card-subtitle
+                >
+                <div class="text-center m-t-24">
+                  <ng-container *ngIf="signatureImage; else noSignature">
+                    <img
+                      [src]="signatureImage"
+                      width="200"
+                      height="100"
+                      (error)="handleSignatureError($event)"
+                    />
+                  </ng-container>
+                  
+                  <ng-template #noSignature>
+                    <div class="no-signature-message">
+                      <p>Veuillez insérer votre signature</p>
+                    </div>
+                  </ng-template>
+                  
+                  <div class="m-t-24">
+                    <input type="file" #signatureInput style="display: none" 
+                          (change)="onFileSelected($event, 'signature')" accept="image/*">
+                    <button mat-flat-button color="primary" (click)="signatureInput.click()">
+                      <mat-icon>upload</mat-icon>
+                      @if (!signatureImage) {
+                        Ajouter la signature
+                      } @else {
+                        Changer la signature
+                      }
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="p-30 b-1 rounded">
+                <mat-card-title>Changer le mot de passe</mat-card-title>
+                <mat-card-subtitle class="mat-body-1"
+                  >Pour changer votre mot de passe, confirmez ici</mat-card-subtitle
+                >
+                <form [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()" class="m-t-24">
+                  <mat-label class="f-w-600 m-b-8 d-block">Mot de passe actuel</mat-label>
+                  <mat-form-field appearance="outline" class="w-100" color="primary">
+                    <input matInput type="password" formControlName="currentPassword" required>
+                  </mat-form-field>
+
+                  <mat-label class="f-w-600 m-b-8 d-block">Nouveau mot de passe</mat-label>
+                  <mat-form-field appearance="outline" class="w-100" color="primary">
+                    <input matInput type="password" formControlName="newPassword" required>
+                    <mat-hint>Minimum 6 caractères</mat-hint>
+                  </mat-form-field>
+
+                  <mat-label class="f-w-600 m-b-8 d-block">Confirmer le mot de passe</mat-label>
+                  <mat-form-field appearance="outline" class="w-100" color="primary">
+                    <input matInput type="password" formControlName="confirmPassword" required>
+                    <mat-error *ngIf="passwordForm.hasError('mismatch')">
+                      Les mots de passe ne correspondent pas
+                    </mat-error>
+                  </mat-form-field>
+
+                  <div class="text-right m-t-16">
+                    <button 
+                      mat-flat-button 
+                      color="primary" 
+                      type="submit"
+                      [disabled]="!passwordForm.valid || isLoading">
+                      @if (isLoading) {
+                        <mat-icon class="spinner">hourglass_empty</mat-icon>
+                      } @else {
+                        <mat-icon>lock_reset</mat-icon>
+                      }
+                      Changer le mot de passe
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="b-1 rounded p-30">
+                <mat-card-title>Détails personnels</mat-card-title>
+                <mat-card-subtitle class="mat-body-1"
+                  >Modifiez et enregistrez vos informations personnelles ici</mat-card-subtitle
+                >
+
+                <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+                  <div class="row m-t-24">
+                    <div class="col-sm-6">
+                      <mat-label class="f-w-600 m-b-8 d-block">Nom</mat-label>
+                      <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput formControlName="nom" required>
+                      </mat-form-field>
+
+                      <mat-label class="f-w-600 m-b-8 d-block">Prénom</mat-label>
+                      <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput formControlName="prenom" required>
+                      </mat-form-field>
+
+                      <mat-label class="f-w-600 m-b-8 d-block">Email</mat-label>
+                      <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput type="email" formControlName="email" required>
+                      </mat-form-field>
+                    </div>
+                    <div class="col-sm-6">
+                      <mat-label class="f-w-600 m-b-8 d-block">Téléphone</mat-label>
+                      <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput type="tel" formControlName="telephone">
+                      </mat-form-field>
+
+                      <ng-container *ngIf="authService.isEnseignant()">
+                        <mat-label class="f-w-600 m-b-8 d-block">Grade</mat-label>
+                        <mat-form-field appearance="outline" class="w-100" color="primary">
+                          <input matInput formControlName="grade">
+                        </mat-form-field>
+
+                        <mat-label class="f-w-600 m-b-8 d-block">Département</mat-label>
+                        <mat-form-field appearance="outline" class="w-100" color="primary">
+                          <input matInput formControlName="departement">
+                        </mat-form-field>
+                      </ng-container>
+
+                      <ng-container *ngIf="authService.isAdmin()">
+                        <mat-label class="f-w-600 m-b-8 d-block">Fonction</mat-label>
+                        <mat-form-field appearance="outline" class="w-100" color="primary">
+                          <input matInput formControlName="fonction">
+                        </mat-form-field>
+                      </ng-container>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <button 
+                      mat-flat-button 
+                      color="primary" 
+                      type="submit"
+                      [disabled]="!profileForm.valid || isLoading">
+                      @if (isLoading) {
+                        <mat-icon class="spinner">hourglass_empty</mat-icon>
+                      } @else {
+                        <mat-icon>save</mat-icon>
+                      }
+                      Enregistrer
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-      <div class="col-sm-6">
-        <div class="p-30 b-1 rounded">
-          <mat-card-title>Changer le mot de passe</mat-card-title>
-          <mat-card-subtitle class="mat-body-1"
-            >Pour changer votre mot de passe, confirmez ici</mat-card-subtitle
-          >
-          <form [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()" class="m-t-24">
-            <mat-label class="f-w-600 m-b-8 d-block">Mot de passe actuel</mat-label>
-            <mat-form-field appearance="outline" class="w-100" color="primary">
-              <input matInput type="password" formControlName="currentPassword" required>
-            </mat-form-field>
-
-            <mat-label class="f-w-600 m-b-8 d-block">Nouveau mot de passe</mat-label>
-            <mat-form-field appearance="outline" class="w-100" color="primary">
-              <input matInput type="password" formControlName="newPassword" required>
-              <mat-hint>Minimum 6 caractères</mat-hint>
-            </mat-form-field>
-
-            <mat-label class="f-w-600 m-b-8 d-block">Confirmer le mot de passe</mat-label>
-            <mat-form-field appearance="outline" class="w-100" color="primary">
-              <input matInput type="password" formControlName="confirmPassword" required>
-              <mat-error *ngIf="passwordForm.hasError('mismatch')">
-                Les mots de passe ne correspondent pas
-              </mat-error>
-            </mat-form-field>
-
-            <div class="text-right m-t-16">
-              <button 
-                mat-flat-button 
-                color="primary" 
-                type="submit"
-                [disabled]="!passwordForm.valid || isLoading">
-                @if (isLoading) {
-                  <mat-icon class="spinner">hourglass_empty</mat-icon>
-                } @else {
-                  <mat-icon>lock_reset</mat-icon>
-                }
-                Changer le mot de passe
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-      <div class="col-12">
-        <div class="b-1 rounded p-30">
-          <mat-card-title>Détails personnels</mat-card-title>
-          <mat-card-subtitle class="mat-body-1"
-            >Modifiez et enregistrez vos informations personnelles ici</mat-card-subtitle
-          >
-
-          <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-            <div class="row m-t-24">
-              <div class="col-sm-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Nom</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input matInput formControlName="nom" required>
-                </mat-form-field>
-
-                <mat-label class="f-w-600 m-b-8 d-block">Prénom</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input matInput formControlName="prenom" required>
-                </mat-form-field>
-
-                <mat-label class="f-w-600 m-b-8 d-block">Email</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input matInput type="email" formControlName="email" required>
-                </mat-form-field>
-              </div>
-              <div class="col-sm-6">
-                <mat-label class="f-w-600 m-b-8 d-block">Téléphone</mat-label>
-                <mat-form-field appearance="outline" class="w-100" color="primary">
-                  <input matInput type="tel" formControlName="telephone">
-                </mat-form-field>
-
-                <ng-container *ngIf="authService.isEnseignant()">
-                  <mat-label class="f-w-600 m-b-8 d-block">Grade</mat-label>
-                  <mat-form-field appearance="outline" class="w-100" color="primary">
-                    <input matInput formControlName="grade">
-                  </mat-form-field>
-
-                  <mat-label class="f-w-600 m-b-8 d-block">Département</mat-label>
-                  <mat-form-field appearance="outline" class="w-100" color="primary">
-                    <input matInput formControlName="departement">
-                  </mat-form-field>
-                </ng-container>
-
-                <ng-container *ngIf="authService.isAdmin()">
-                  <mat-label class="f-w-600 m-b-8 d-block">Fonction</mat-label>
-                  <mat-form-field appearance="outline" class="w-100" color="primary">
-                    <input matInput formControlName="fonction">
-                  </mat-form-field>
-                </ng-container>
-              </div>
-            </div>
-            <div class="text-right">
-              <button 
-                mat-flat-button 
-                color="primary" 
-                type="submit"
-                [disabled]="!profileForm.valid || isLoading">
-                @if (isLoading) {
-                  <mat-icon class="spinner">hourglass_empty</mat-icon>
-                } @else {
-                  <mat-icon>save</mat-icon>
-                }
-                Enregistrer
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </mat-card-content>
-</mat-tab>
+        </mat-card-content>
+      </mat-tab>
       <!-- Onglet Notifications -->
       <mat-tab>
         <ng-template mat-tab-label>

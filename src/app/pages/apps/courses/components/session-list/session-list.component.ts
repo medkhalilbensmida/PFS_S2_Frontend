@@ -19,6 +19,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { CreateSessionDialogComponent } from '../create-session-dialog/create-session-dialog.component';
 import { RouterModule } from '@angular/router';
 import { EditSessionDialogComponent } from '../edit-session-dialog/edit-session-dialog.component';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-session-list',
@@ -38,7 +39,8 @@ import { EditSessionDialogComponent } from '../edit-session-dialog/edit-session-
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    MatChipsModule
+    MatChipsModule,
+    MatCheckboxModule
   ],
 })
 export class SessionListComponent implements OnInit {
@@ -47,6 +49,7 @@ export class SessionListComponent implements OnInit {
   isLoading = false;
   error: string | null = null;
   searchText: string = '';
+  filterActiveOnly: boolean = false;
 
   @ViewChild('searchInput') searchInput: any;
 
@@ -93,8 +96,10 @@ export class SessionListComponent implements OnInit {
 
     this.sessionService.getSessions().subscribe({
       next: (data: SessionExamen[]) => {
-        this.allSessions = data;
-        this.sessions = data;
+        this.allSessions = data.sort((a, b) => 
+          new Date(a.dateDebut).getTime() - new Date(b.dateDebut).getTime()
+        );
+        this.applyFilters();
         this.isLoading = false;
       },
       error: (error: any) => {
@@ -109,12 +114,42 @@ export class SessionListComponent implements OnInit {
 
   applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value.toLowerCase();
-    this.sessions = filterValue 
-      ? this.allSessions.filter(s => 
-          s.type.toLowerCase().includes(filterValue) || 
-          s.numSemestre.toLowerCase().includes(filterValue))
-      : [...this.allSessions];
+    this.searchText = filterValue;
+    this.applyFilters();
   }
+
+applyFilters(): void {
+  let filteredSessions = [...this.allSessions];
+  
+  if (this.searchText?.trim()) {
+    const searchTerm = this.searchText.toLowerCase().trim();
+    filteredSessions = filteredSessions.filter(s => 
+      s.type.toLowerCase().includes(searchTerm) || 
+      s.numSemestre.toString().toLowerCase().includes(searchTerm)
+    );
+  }
+  
+  if (this.filterActiveOnly) {
+    filteredSessions = filteredSessions.filter(s => s.estActive === true);
+  }
+  
+  this.sessions = filteredSessions;
+}
+
+toggleActiveFilter(): void {
+  this.filterActiveOnly = !this.filterActiveOnly;
+  
+  this.applyFilters();
+  
+  console.log('Filtre actif:', this.filterActiveOnly, 'Sessions:', this.sessions.length);
+}
+
+
+// Modifiez la méthode clearSearch :
+clearSearch(): void {
+  this.searchText = '';
+  this.applyFilters();
+}
 
   deleteSession(sessionId: number): void {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette session ?')) {
@@ -145,10 +180,7 @@ export class SessionListComponent implements OnInit {
     }
   }
 
-  clearSearch(): void {
-    this.searchText = '';
-    this.applyFilter({ target: { value: '' } } as unknown as Event);
-  }
+
   
   storeSessionInLocalStorage(session: SessionExamen): void {
     localStorage.setItem('currentSession', JSON.stringify(session));

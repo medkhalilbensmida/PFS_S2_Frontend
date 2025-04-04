@@ -1,0 +1,36 @@
+/* Style pour l'image de profil dans la toolbar */
+.profile-btn-dd img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  /* Style pour l'image de profil dans le menu */
+  .mat-menu-item img, 
+  .topbar-dd img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Effet hover pour le bouton profil */
+  .profile-btn-dd:hover img {
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+  }
+
+  .default-profile-img {
+    background-color: #f5f5f5;
+    padding: 4px;
+  }
+  
+  .dark .default-profile-img {
+    background-color: #424242;
+  }
+  
+  .profile-menu-img.default-profile-img {
+    padding: 8px;
+  }

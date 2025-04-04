@@ -12,9 +12,11 @@ import { TablerIconsModule } from 'angular-tabler-icons';
 import { ProfileService } from '../../services/profile.service';
 import { AuthService } from '../../../../authentication/services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { DefaultImageDialogComponent } from '../default-images-dialog/default-images-dialog.component';
 
 @Component({
   selector: 'app-account-setting',
@@ -31,7 +33,8 @@ import { Router } from '@angular/router';
     MatSlideToggleModule,
     MatSelectModule,
     MatInputModule,
-    MatButtonModule
+    MatButtonModule,
+    CommonModule
   ],
   templateUrl: './account-setting.component.html',
   styleUrls: ['./account-setting.component.scss']
@@ -42,9 +45,11 @@ export class AppAccountSettingComponent implements OnInit {
   profileData: any;
   isLoading = false;
   originalEmail: string = '';
-  profileImage: string = '/assets/images/profile/user-1.jpg';
+  profileImage: string | null = null;
+  signatureImage: string | null = null;
 
   constructor(
+    private dialog: MatDialog,
     private fb: FormBuilder,
     private profileService: ProfileService,
     public authService: AuthService,
@@ -80,6 +85,11 @@ export class AppAccountSettingComponent implements OnInit {
         this.profileData = data;
         this.profileForm.patchValue(data);
         this.originalEmail = data.email;
+        
+        // Charger les images seulement si elles existent
+        this.profileImage = data.photoProfil ? data.photoProfil : null;
+        this.signatureImage = data.signature ? data.signature : null;
+        
         this.isLoading = false;
       },
       error: (error) => {
@@ -90,33 +100,145 @@ export class AppAccountSettingComponent implements OnInit {
     });
   }
 
-  onSubmit(): void {
-    if (this.profileForm.valid && !this.isLoading) {
+  onFileSelected(event: any, type: 'profile' | 'signature'): void {
+    const file: File = event.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      let endpoint = '';
+      if (type === 'profile') {
+        formData.append('userId', this.profileData.id.toString());
+        formData.append('userType', this.authService.isAdmin() ? 'ADMIN' : 'ENSEIGNANT');
+        endpoint = '/api/files/upload-profile';
+      } else {
+        formData.append('adminId', this.profileData.id.toString());
+        endpoint = '/api/files/upload-signature';
+      }
+
       this.isLoading = true;
-      this.profileService.updateProfile(this.profileForm.value).subscribe({
-        next: (updatedData) => {
-          this.snackBar.open('Profil mis à jour avec succès', 'Fermer', { duration: 3000 });
-          this.profileData = updatedData;
-          this.profileForm.patchValue(updatedData);
-          this.authService.updateUserData(updatedData);
-          
-          if (this.profileForm.value.email !== this.originalEmail) {
-            this.snackBar.open('Veuillez vous reconnecter avec votre nouvel email', 'Fermer', { duration: 5000 });
-            setTimeout(() => {
-              this.authService.signOut();
-            }, 3000);
+      this.http.post(endpoint, formData).subscribe({
+        next: (response: any) => {
+          if (type === 'profile') {
+            this.profileImage = response.filePath;
+            // Notifie le service du changement
+            this.profileService.updateProfileImage(response.filePath);
+          }else {
+            this.signatureImage = response.filePath;
           }
-          this.isLoading = false; // Ajout de cette ligne
+          this.snackBar.open(type === 'profile' ? 'Photo mise à jour' : 'Signature mise à jour', 'Fermer', { duration: 3000 });
+          this.isLoading = false;
         },
         error: (error) => {
-          console.error('Error updating profile:', error);
-          const errorMsg = error.error?.message || 'Erreur lors de la mise à jour du profil';
-          this.snackBar.open(errorMsg, 'Fermer', { duration: 3000 });
+          console.error(`Error uploading ${type} image:`, error);
+          this.snackBar.open(`Erreur lors du téléchargement ${type === 'profile' ? 'de la photo' : 'de la signature'}`, 'Fermer', { duration: 3000 });
           this.isLoading = false;
         }
       });
     }
   }
+
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    // Fallback to first default image
+    img.src = 'assets/images/profile/user-1.jpg';
+}
+
+  handleSignatureError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'assets/images/signatures/default-signature.png';
+  }
+
+  openDefaultImagesDialog(): void {
+    this.http.get('/api/images/default-profiles').subscribe({
+        next: (images: any) => {
+            const dialogRef = this.dialog.open(DefaultImageDialogComponent, {
+                data: { images }
+            });
+
+            dialogRef.afterClosed().subscribe(selectedImage => {
+                if (selectedImage) {
+                    this.selectDefaultImage(selectedImage);
+                }
+            });
+        },
+        error: (error) => {
+            console.error('Error loading default images:', error);
+            this.snackBar.open('Erreur lors du chargement des images par défaut', 'Fermer', { duration: 3000 });
+        }
+    });
+}
+
+selectDefaultImage(imageName: string): void {
+  const userData = this.authService.getUserData();
+  if (!userData) {
+      console.error('User data is null');
+      this.snackBar.open('Erreur : données utilisateur introuvables', 'Fermer', { duration: 3000 });
+      return;
+  }
+
+  const request = {
+      imageName: imageName,
+      userId: userData.id,
+      userType: this.authService.isAdmin() ? 'ADMIN' : 'ENSEIGNANT'
+  };
+
+  this.isLoading = true;
+  this.http.post('/api/files/select-default-profile', request).subscribe({
+      next: (response: any) => {
+          const newImageUrl = response.filePath + '?t=' + new Date().getTime();
+          this.profileImage = newImageUrl;
+          // Notifier le service du changement d'image
+          this.profileService.updateProfileImage(newImageUrl);
+          this.snackBar.open('Photo de profil mise à jour avec succès', 'Fermer', { duration: 3000 });
+          this.isLoading = false;
+      },
+      error: (error) => {
+          console.error('Error selecting default image:', error);
+          const newImageUrl = `/assets/images/profile/${imageName}`;
+          this.profileImage = newImageUrl;
+          // Notifier le service du changement d'image
+          this.profileService.updateProfileImage(newImageUrl);
+          this.snackBar.open('Image par défaut appliquée localement', 'Fermer', { duration: 3000 });
+          this.isLoading = false;
+      }
+  });
+}
+
+onSubmit(): void {
+  if (this.profileForm.valid && !this.isLoading) {
+    this.isLoading = true;
+    
+    // Inclure la photo actuelle dans les données envoyées
+    const formData = {
+      ...this.profileForm.value,
+      photoProfil: this.profileImage
+    };
+
+    this.profileService.updateProfile(formData).subscribe({
+      next: (updatedData) => {
+        this.snackBar.open('Profil mis à jour avec succès', 'Fermer', { duration: 3000 });
+        this.profileData = updatedData;
+        
+        // Forcer le rafraîchissement de l'image si nécessaire
+        if (updatedData.photoProfil) {
+          this.profileImage = updatedData.photoProfil + '?t=' + new Date().getTime();
+        }
+
+        if (this.profileForm.value.email !== this.originalEmail) {
+          this.snackBar.open('Veuillez vous reconnecter avec votre nouvel email', 'Fermer', { duration: 5000 });
+          setTimeout(() => this.authService.signOut(), 3000);
+        }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error updating profile:', error);
+        this.snackBar.open(error.error?.message || 'Erreur lors de la mise à jour', 'Fermer', { duration: 3000 });
+        this.isLoading = false;
+      }
+    });
+  }
+}
 
   onPasswordSubmit(): void {
     if (this.passwordForm.valid && !this.isLoading) {
@@ -140,10 +262,9 @@ export class AppAccountSettingComponent implements OnInit {
           this.passwordForm.reset();
           this.isLoading = false;
           
-          setTimeout(() => {
-            this.snackBar.open('Vous allez être déconnecté pour appliquer les changements...', 'Fermer', { duration: 3000 });
-            setTimeout(() => this.authService.signOut(), 3000);
-          }, 2000);
+          // Déconnexion après changement de mot de passe
+          this.snackBar.open('Vous allez être déconnecté pour appliquer les changements...', 'Fermer', { duration: 3000 });
+          setTimeout(() => this.authService.signOut(), 3000);
         },
         error: (error) => {
           console.error('Error changing password:', error);

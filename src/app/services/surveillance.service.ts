@@ -14,6 +14,8 @@ export interface Surveillance {
   enseignantPrincipalId?: number;
   enseignantSecondaireId?: number;
   sessionExamenId?: number;
+  salleName?: string;
+  matiereName?: string;
 }
 
 export interface Enseignant {
@@ -49,6 +51,19 @@ export interface CreateSurveillancePayload {
   sessionExamenId: number;
   enseignantPrincipalId?: number | null;
   enseignantSecondaireId?: number | null;
+}
+
+export interface Salle {
+  id: number;
+  numero: string;
+  capacite?: number;
+  nom?: string;
+}
+
+export interface Matiere {
+  id: number;
+  nom: string;
+  code?: string;
 }
 
 @Injectable({
@@ -142,7 +157,29 @@ export class SurveillanceService {
     return this.http.get<DisponibiliteEnseignantDTO[]>(`${this.apiUrl}/disponibilites/surveillance/${surveillanceId}`);
   }
 
-  /*----PARTIE DISPONIBILITE-----------*/
+  /**
+   * Met à jour une surveillance existante
+   */
+  updateSurveillance(id: number, surveillance: any): Observable<Surveillance> {
+    return this.http.put<Surveillance>(`${this.apiUrl}/surveillances/${id}`, surveillance);
+  }
+
+  /**
+   * Récupère la liste de toutes les salles
+   */
+  getAllSalles(): Observable<Salle[]> {
+    return this.http.get<Salle[]>(`${this.apiUrl}/salles`);
+  }
+
+  /**
+   * Récupère la liste de toutes les matières
+   */
+  getAllMatieres(): Observable<Matiere[]> {
+    return this.http.get<Matiere[]>(`${this.apiUrl}/matieres/All`);
+  }
+
+
+   /*----PARTIE DISPONIBILITE-----------*/
 
 
  /**
@@ -186,4 +223,7 @@ checkDisponibilite(surveillanceId: number): Observable<boolean> {
     })
   );
 }
-}
+  }
+
+ 
+

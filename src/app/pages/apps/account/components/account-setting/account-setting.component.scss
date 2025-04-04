@@ -27,12 +27,15 @@
   .p-30 { padding: 30px !important; }
   .m-r-8 { margin-right: 8px !important; }
   .m-t-24 { margin-top: 24px !important; }
-  .m-b-8 { margin-bottom: 8px !important; }
+  .m-b-8 { margin-bottom: 4px !important; }
   .m-b-4 { margin-bottom: 4px !important; }
   .m-l-8 { margin-left: 8px !important; }
   .m-l-16 { margin-left: 16px !important; }
   .m-l-auto { margin-left: auto !important; }
   
+  .m{ margin-bottom: 15px }
+  .m-t{ margin-top: -25px }
+
   /* Bordures */
   .b-1 { border: 1px solid rgba(0, 0, 0, 0.12); }
   .b-b-1 { border-bottom: 1px solid rgba(0, 0, 0, 0.12); }
