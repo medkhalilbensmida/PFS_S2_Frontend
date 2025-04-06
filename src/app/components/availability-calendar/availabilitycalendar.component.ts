@@ -53,6 +53,7 @@ import {
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { Nl2brPipe } from 'src/app/pipe/nl2br.pipe';
+import { AuthService } from 'src/app/pages/authentication/services/auth.service';
 
 const colors: any = {
   red: {
@@ -67,6 +68,18 @@ const colors: any = {
     primary: '#ffae1f',
     secondary: '#fef5e5',
   },
+  green: {
+    primary: '#4CAF50',
+    secondary: '#E8F5E9',
+  },
+  grey: {
+    primary: '#9E9E9E',
+    secondary: '#F5F5F5',
+  },
+  purple: {
+    primary: '#9C27B0',
+    secondary: '#F3E5F5',
+  }
 };
 
 @Component({
@@ -198,11 +211,16 @@ export class AppAvailabilitycalendarComponent implements OnInit {
   disponibilites: Map<number, boolean> = new Map();
   loading = false;
 
+ 
+
   constructor(
     private dialog: MatDialog,
     @Inject(DOCUMENT) private document: Document,
     private surveillanceService: SurveillanceService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private authService: AuthService // Add AuthService
+
+
   ) {}
 
     /*--------------*/
@@ -247,32 +265,14 @@ export class AppAvailabilitycalendarComponent implements OnInit {
   }
 
   handleEvent(action: string, event: CalendarEvent): void {
-    if (event.meta?.surveillance) {
+    if (event.meta?.surveillance && event.meta.canToggle) {
       this.toggleDisponibilite(event.meta.surveillance.id);
+    } else if (event.meta?.surveillance) {
+      // Show tooltip message for non-clickable events
+      this.showError(this.getButtonTooltip(event.meta.surveillance));
     }
   }
-  
 
-  /*addEvent(): void {
-    this.dialogRef2 = this.dialog.open(CalendarFormDialogComponent, {
-      panelClass: 'calendar-form-dialog',
-      data: {
-        action: 'add',
-        date: new Date(),
-      },
-    });
-    this.dialogRef2.afterClosed().subscribe((res) => {
-      if (!res) {
-        return;
-      }
-      const dialogAction = res.action;
-      const responseEvent = res.event;
-      responseEvent.actions = this.actions;
-      this.events.push(responseEvent);
-      this.dialogRef2 = Object.create(null);
-      this.refresh.next(res);
-    });
-  }*/
 
   deleteEvent(eventToDelete: CalendarEvent): void {
     this.events = this.events.filter((event) => event !== eventToDelete);
@@ -290,77 +290,165 @@ export class AppAvailabilitycalendarComponent implements OnInit {
   /*--------------*/
   loadSurveillances() {
     this.loading = true;
-    this.surveillanceService.getAllSurveillances()
-      .pipe(
-        finalize(() => this.loading = false)
-      )
-      .subscribe({
-        next: (surveillances) => {
-          console.log('Loaded surveillances:', surveillances);
-          this.surveillances = surveillances;
-          this.loadDisponibilites();
-        },
-        error: (error) => {
-          console.error('Error loading surveillances:', error);
-          this.showError('Erreur lors du chargement des surveillances');
+    const currentUser = this.authService.getUserData();
+    
+    forkJoin({
+      all: this.surveillanceService.getAllSurveillances(),
+      my: this.surveillanceService.getMyDisponibilites()
+    })
+    .pipe(
+      finalize(() => this.loading = false)
+    )
+    .subscribe({
+      next: ({ all, my }) => {
+        // Check if user is an enseignant
+        if (currentUser && currentUser.role === 'ROLE_ENSEIGNANT') {
+          const currentEnseignantId = currentUser.id;
+          
+          // Filter surveillances
+          this.surveillances = all.filter(surveillance => 
+            // Show EN_COURS to everyone
+            surveillance.statut === 'EN_COURS' ||
+            // Show other statuses only if they are assigned as principal or secondairy teacher
+            ((surveillance.enseignantPrincipalId === currentEnseignantId || surveillance.enseignantSecondaireId === currentEnseignantId) && 
+             ['PLANIFIEE', 'TERMINEE', 'ANNULEE'].includes(surveillance.statut))
+          );
+        } else {
+          // For admin or other roles, show all surveillances
+          this.surveillances = all;
         }
-      });
-  }
-
-  loadDisponibilites() {
-    if (!this.surveillances.length) {
-      return;
-    }
-
-    const disponibiliteChecks = this.surveillances.map(surveillance =>
-      this.surveillanceService.checkDisponibilite(surveillance.id).pipe(
-        map(isDisponible => ({ surveillanceId: surveillance.id, isDisponible }))
-      )
-    );
-
-    forkJoin(disponibiliteChecks)
+        
+        this.loadDisponibilites();
+      },
+      error: (error) => {
+        console.error('Error loading surveillances:', error);
+        this.showError('Erreur lors du chargement des surveillances');
+      }
+    });
+}
+// Add this method declaration
+loadDisponibilites(): void {
+  if (this.surveillances.length > 0) {
+    this.surveillanceService.getMyDisponibilites()
       .subscribe({
-        next: (results) => {
-          results.forEach(result => {
-            this.disponibilites.set(result.surveillanceId, result.isDisponible);
-          });
+        next: (disponibilites) => {
+          this.disponibilites = new Map(
+            disponibilites.map(d => [d.surveillanceId!, d.estDisponible])
+          );
           this.updateCalendarEvents();
         },
         error: (error) => {
-          console.error('Error checking disponibilites:', error);
-          this.showError('Erreur lors de la vérification des disponibilités');
+          console.error('Error loading disponibilites:', error);
+          this.showError('Erreur lors du chargement des disponibilités');
         }
       });
   }
+}
+
+// Add helper method to check if user is concerned teacher
+isConcernedTeacher(surveillance: Surveillance): boolean {
+  const currentUser = this.authService.getUserData();
+  return currentUser?.role === 'ROLE_ENSEIGNANT' && 
+         surveillance.enseignantPrincipalId === currentUser.id;
+}
+// Update button visibility logic
+shouldShowButton(surveillance: Surveillance): boolean {
+  const currentUser = this.authService.getUserData();
+  return surveillance.statut === 'EN_COURS' && 
+         currentUser?.role === 'ROLE_ENSEIGNANT';
+}
+
+// Update tooltip logic
+getButtonTooltip(surveillance: Surveillance): string {
+  const currentUser = this.authService.getUserData();
+  
+  if (currentUser?.role !== 'ROLE_ENSEIGNANT') {
+    return 'Seuls les enseignants peuvent gérer les disponibilités';
+  }
+  
+  if (surveillance.statut !== 'EN_COURS') {
+    switch(surveillance.statut) {
+      case 'PLANIFIEE':
+        return 'Cette surveillance est déjà planifiée';
+      case 'TERMINEE':
+        return 'Cette surveillance est déjà terminée';
+      case 'ANNULEE':
+        return 'Cette surveillance a été annulée';
+      default:
+        return `Cette surveillance est ${surveillance.statut.toLowerCase()}`;
+    }
+  }
+  
+  return this.disponibilites.get(surveillance.id) 
+    ? 'Cliquez pour annuler votre disponibilité' 
+    : 'Cliquez pour marquer votre disponibilité';
+}
+
+
 
   createEventTitle(surveillance: Surveillance): string {
     const dateDebut = this.surveillanceService.formatDate(surveillance.dateDebut);
     const dateFin = this.surveillanceService.formatDate(surveillance.dateFin);
     const salle = surveillance.salleName || (surveillance.salleId ? `Salle ${surveillance.salleId}` : 'Salle non définie');
     const matiere = surveillance.matiereName || (surveillance.matiereId ? `Matière ${surveillance.matiereId}` : 'Matière non définie');
-    const status = this.disponibilites.get(surveillance.id) ? 'Disponible' : 'Non disponible';
-  /*Surveillance #${surveillance.id}*/
-    return `Début: ${dateDebut}
+    
+    let title = `Début: ${dateDebut}
   Fin: ${dateFin}
-  ${salle}
-  ${matiere}
-  Statut: ${surveillance.statut}
-  Disponibilité: ${status}`;
+  Salle: ${salle}
+  Matière: ${matiere}
+  Statut: ${surveillance.statut}`;
+  
+    // Only show disponibilité for EN_COURS and PLANIFIEE status
+    if (!['TERMINEE', 'ANNULEE','PLANIFIEE'].includes(surveillance.statut)) {
+      const status = this.disponibilites.get(surveillance.id) ? 'Disponible' : 'Non disponible';
+      title += `\nDisponibilité: ${status}`;
+    }
+  
+    return title;
   }
 
   updateCalendarEvents() {
-    this.events = this.surveillances.map(surveillance => ({
-      id: surveillance.id,
-      start: new Date(surveillance.dateDebut),
-      end: new Date(surveillance.dateFin),
-      title: this.createEventTitle(surveillance),
-      color: this.disponibilites.get(surveillance.id) ? colors.blue : colors.yellow,
-      // Remove the actions array since we're using a custom template
-      meta: {
-        surveillance,
-        isDisponible: this.disponibilites.get(surveillance.id)
+    this.events = this.surveillances.map(surveillance => {
+      const isDisponible = this.disponibilites.get(surveillance.id);
+      let eventColor;
+      let canToggle = false;
+  
+      // Determine color and toggleability based on status
+      switch(surveillance.statut) {
+        case 'EN_COURS':
+          eventColor = isDisponible ? colors.green : colors.red;
+          canToggle = true;
+          break;
+        case 'PLANIFIEE':
+          eventColor = colors.blue;
+          canToggle = false;
+          break;
+        case 'TERMINEE':
+          eventColor = colors.purple;
+          canToggle = false;
+          break;
+        case 'ANNULEE':
+          eventColor = colors.grey;
+          canToggle = false;
+          break;
+        default:
+          eventColor = colors.yellow;
+          canToggle = false;
       }
-    }));
+  
+      return {
+        id: surveillance.id,
+        start: new Date(surveillance.dateDebut),
+        end: new Date(surveillance.dateFin),
+        title: this.createEventTitle(surveillance),
+        color: eventColor,
+        meta: {
+          surveillance,
+          isDisponible,
+          canToggle
+        }
+      };
+    });
     this.refresh.next(null);
   }
 
@@ -400,11 +488,8 @@ export class AppAvailabilitycalendarComponent implements OnInit {
     });
   }
 
-  /*handleEvent(action: string, { event }: { event: CalendarEvent }): void {
-    if (event.meta?.surveillance) {
-      this.toggleDisponibilite(event.meta.surveillance.id);
-    }
-  }*/
+
+
 
   private showSuccess(message: string): void {
     this.snackBar.open(message, 'Fermer', {
