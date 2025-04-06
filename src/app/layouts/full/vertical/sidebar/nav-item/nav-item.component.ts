@@ -60,10 +60,15 @@ export class AppNavItemComponent implements OnChanges {
   ngOnChanges() {
     this.navService.currentUrl.subscribe((url: string) => {
       if (this.item.route && url) {
-        // console.log(`Checking '/${this.item.route}' against '${url}'`);
-        this.expanded = url.indexOf(`/${this.item.route}`) === 0;
-        this.ariaExpanded = this.expanded;
-        //console.log(`${this.item.route} is expanded: ${this.expanded}`);
+        // Special case for surveillance-management route - should highlight Sessions menu item
+        if (this.item.route === 'apps/Sessions' && url.includes('/surveillance-management/')) {
+          this.expanded = true;
+          this.ariaExpanded = true;
+        } else {
+          // Original logic for other routes
+          this.expanded = url.indexOf(`/${this.item.route}`) === 0;
+          this.ariaExpanded = this.expanded;
+        }
       }
     });
   }
