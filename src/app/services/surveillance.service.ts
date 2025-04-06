@@ -188,14 +188,14 @@ export class SurveillanceService {
  getMyDisponibilites(): Observable<DisponibiliteEnseignantDTO[]> {
   return this.http.get<DisponibiliteEnseignantDTO[]>(`${this.apiUrl}/disponibilites/my-disponibilities`);
 }
-
 /**
  * Mark disponibilité for a surveillance
  */
 markDisponibilite(surveillanceId: number): Observable<DisponibiliteEnseignantDTO> {
+  // Use proper URL parameters
   return this.http.put<DisponibiliteEnseignantDTO>(
-    `${this.apiUrl}/disponibilites/${surveillanceId}`, 
-    { estDisponible: true }
+    `${this.apiUrl}/disponibilites/${surveillanceId}?estDisponible=true`,
+    null  // No body needed, using query parameter instead
   );
 }
 
@@ -203,11 +203,13 @@ markDisponibilite(surveillanceId: number): Observable<DisponibiliteEnseignantDTO
  * Cancel disponibilité for a surveillance
  */
 cancelDisponibilite(surveillanceId: number): Observable<DisponibiliteEnseignantDTO> {
+  // Use proper URL parameters
   return this.http.put<DisponibiliteEnseignantDTO>(
-    `${this.apiUrl}/disponibilites/${surveillanceId}`, 
-    { estDisponible: false }
+    `${this.apiUrl}/disponibilites/${surveillanceId}?estDisponible=false`,
+    null  // No body needed, using query parameter instead
   );
 }
+
 
 /**
  * Check if current enseignant is available for a surveillance

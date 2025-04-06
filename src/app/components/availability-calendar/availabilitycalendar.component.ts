@@ -25,7 +25,7 @@ import {
   UntypedFormGroup,
 } from '@angular/forms';
 import { FormControl, Validators } from '@angular/forms';
-import { CalendarFormDialogComponent } from './calendar-form-dialog/calendar-form-dialog.component';
+//import { CalendarFormDialogComponent } from './calendar-form-dialog/calendar-form-dialog.component';
 import {
   startOfDay,
   endOfDay,
@@ -52,6 +52,7 @@ import {
 } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { Nl2brPipe } from 'src/app/pipe/nl2br.pipe';
 
 const colors: any = {
   red: {
@@ -107,14 +108,15 @@ export class CalendarDialogComponent {
     CalendarModule,
     CommonModule,
     MatDatepickerModule,
-    MatDialogModule, MatFormFieldModule
+    MatDialogModule, MatFormFieldModule,
+    Nl2brPipe
   ],
   providers: [provideNativeDateAdapter(), CalendarDateFormatter],
 })
 export class AppAvailabilitycalendarComponent implements OnInit {
+[x: string]: any;
   dialogRef: MatDialogRef<CalendarDialogComponent> = Object.create(TemplateRef);
-  dialogRef2: MatDialogRef<CalendarFormDialogComponent> =
-    Object.create(TemplateRef);
+  //dialogRef2: MatDialogRef<CalendarFormDialogComponent> =Object.create(TemplateRef);
 
   lastCloseResult = '';
   actionsAlignment = '';
@@ -191,7 +193,7 @@ export class AppAvailabilitycalendarComponent implements OnInit {
     },*/
   ];
 
-  activeDayIsOpen = true;
+  activeDayIsOpen = false;
   surveillances: Surveillance[] = [];
   disponibilites: Map<number, boolean> = new Map();
   loading = false;
@@ -210,19 +212,20 @@ export class AppAvailabilitycalendarComponent implements OnInit {
     }
     /*--------------*/
 
-  dayClicked({ date, events }: { date: Date; events: CalendarEvent[] }): void {
-    if (isSameMonth(date, this.viewDate)) {
-      if (
-        (isSameDay(this.viewDate, date) && this.activeDayIsOpen === true) ||
-        events.length === 0
-      ) {
-        this.activeDayIsOpen = false;
-      } else {
-        this.activeDayIsOpen = true;
-        this.viewDate = date;
+    dayClicked({ date, events }: { date: Date; events: CalendarEvent[] }): void {
+      if (isSameMonth(date, this.viewDate)) {
+        if (
+          (isSameDay(this.viewDate, date) && this.activeDayIsOpen === true) ||
+          events.length === 0
+        ) {
+          this.activeDayIsOpen = false;
+        } else if (events.length > 0) { // Only open if there are events
+          this.activeDayIsOpen = true;
+          this.viewDate = date;
+        }
       }
     }
-  }
+ 
 
   eventTimesChanged({
     event,
@@ -250,7 +253,7 @@ export class AppAvailabilitycalendarComponent implements OnInit {
   }
   
 
-  addEvent(): void {
+  /*addEvent(): void {
     this.dialogRef2 = this.dialog.open(CalendarFormDialogComponent, {
       panelClass: 'calendar-form-dialog',
       data: {
@@ -269,7 +272,7 @@ export class AppAvailabilitycalendarComponent implements OnInit {
       this.dialogRef2 = Object.create(null);
       this.refresh.next(res);
     });
-  }
+  }*/
 
   deleteEvent(eventToDelete: CalendarEvent): void {
     this.events = this.events.filter((event) => event !== eventToDelete);
@@ -277,6 +280,9 @@ export class AppAvailabilitycalendarComponent implements OnInit {
 
   setView(view: CalendarView): void {
     this.view = view;
+  }
+  closeOpenMonthViewDay() {
+    this.activeDayIsOpen = false;
   }
 
 
@@ -328,10 +334,18 @@ export class AppAvailabilitycalendarComponent implements OnInit {
   }
 
   createEventTitle(surveillance: Surveillance): string {
-    const salle = surveillance.salleId ? `Salle ${surveillance.salleId}` : 'Salle non définie';
-    const matiere = surveillance.matiereId ? `Matière ${surveillance.matiereId}` : 'Matière non définie';
-    const status = this.disponibilites.get(surveillance.id) ? '(Disponible)' : '(Non disponible)';
-    return `Surveillance ${surveillance.id} ${status}\n${salle}\n${matiere}`;
+    const dateDebut = this.surveillanceService.formatDate(surveillance.dateDebut);
+    const dateFin = this.surveillanceService.formatDate(surveillance.dateFin);
+    const salle = surveillance.salleName || (surveillance.salleId ? `Salle ${surveillance.salleId}` : 'Salle non définie');
+    const matiere = surveillance.matiereName || (surveillance.matiereId ? `Matière ${surveillance.matiereId}` : 'Matière non définie');
+    const status = this.disponibilites.get(surveillance.id) ? 'Disponible' : 'Non disponible';
+  /*Surveillance #${surveillance.id}*/
+    return `Début: ${dateDebut}
+  Fin: ${dateFin}
+  ${salle}
+  ${matiere}
+  Statut: ${surveillance.statut}
+  Disponibilité: ${status}`;
   }
 
   updateCalendarEvents() {
@@ -341,12 +355,7 @@ export class AppAvailabilitycalendarComponent implements OnInit {
       end: new Date(surveillance.dateFin),
       title: this.createEventTitle(surveillance),
       color: this.disponibilites.get(surveillance.id) ? colors.blue : colors.yellow,
-      actions: [{
-        label: `<mat-icon>${this.disponibilites.get(surveillance.id) ? 'clear' : 'check'}</mat-icon>`,
-        onClick: ({ event }: { event: CalendarEvent }): void => {
-          this.toggleDisponibilite(surveillance.id);
-        }
-      }],
+      // Remove the actions array since we're using a custom template
       meta: {
         surveillance,
         isDisponible: this.disponibilites.get(surveillance.id)
@@ -361,9 +370,23 @@ export class AppAvailabilitycalendarComponent implements OnInit {
     const action = isCurrentlyDisponible 
       ? this.surveillanceService.cancelDisponibilite(surveillanceId)
       : this.surveillanceService.markDisponibilite(surveillanceId);
-
-    action.subscribe({
-      next: () => {
+  
+    action.pipe(
+      catchError(error => {
+        console.error('Error toggling disponibilite:', error);
+        let message;
+        if (error.status === 403) {
+          message = 'Vous devez être connecté en tant qu\'enseignant pour effectuer cette action';
+        } else if (error.status === 400) {
+          message = 'Impossible de modifier la disponibilité. Vérifiez vos permissions.';
+        } else {
+          message = 'Erreur lors de la modification de la disponibilité';
+        }
+        this.showError(message);
+        return throwError(() => error);
+      })
+    ).subscribe({
+      next: (response) => {
         this.disponibilites.set(surveillanceId, !isCurrentlyDisponible);
         this.updateCalendarEvents();
         this.showSuccess(isCurrentlyDisponible 
@@ -371,9 +394,8 @@ export class AppAvailabilitycalendarComponent implements OnInit {
           : 'Disponibilité marquée'
         );
       },
-      error: (error) => {
-        this.showError('Erreur lors de la modification de la disponibilité');
-        console.error(error);
+      error: () => {
+        // Error already handled in catchError
       }
     });
   }
@@ -399,3 +421,9 @@ export class AppAvailabilitycalendarComponent implements OnInit {
   }
 
 }
+function throwError(arg0: () => any): any {
+  throw new Error('Function not implemented.');
+}
+
+
+

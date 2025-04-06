@@ -90,36 +90,59 @@
     <!-- ============================================================== -->
     <div [ngSwitch]="view">
       <mwl-calendar-month-view
-        *ngSwitchCase="'month'"
-        [viewDate]="viewDate"
-        [events]="events"
-        [refresh]="refresh"
-        [activeDayIsOpen]="activeDayIsOpen"
-        (dayClicked)="dayClicked($event.day)"
-        (eventClicked)="handleEvent('Clicked', $event.event)"
-        (eventTimesChanged)="eventTimesChanged($event)"
+      *ngSwitchCase="'month'"
+      [viewDate]="viewDate"
+      [events]="events"
+      [refresh]="refresh"
+      [activeDayIsOpen]="activeDayIsOpen"
+      (dayClicked)="dayClicked($event.day)"
+      (eventClicked)="handleEvent('Clicked', $event.event)"
+      (eventTimesChanged)="eventTimesChanged($event)"
+      (viewDateChange)="closeOpenMonthViewDay()"
+
       >
+      <ng-template
+        mwlCalendarEventTitle
+        let-event="event"
+      >
+      <div class="event-details">
+        <div class="event-info">
+          <mat-icon>event</mat-icon>
+          <span [innerHTML]="event.title | nl2br"></span>
+        </div>
+        <button mat-flat-button
+              class="availability-button"
+              [class.available]="event.meta?.isDisponible" 
+              [class.unavailable]="!event.meta?.isDisponible"
+              [color]="event.meta?.isDisponible ? 'warn' : 'primary'"
+              (click)="toggleDisponibilite(event.meta.surveillance.id)"
+              matTooltip="{{ event.meta?.isDisponible ? 'Cliquez pour annuler votre disponibilité' : 'Cliquez pour marquer votre disponibilité' }}">
+          <mat-icon class="button-icon">{{ event.meta?.isDisponible ? 'close' : 'check' }}</mat-icon>
+          <span class="button-text">{{ event.meta?.isDisponible ? 'Non disponible' : 'Disponible' }}</span>
+        </button>
+      </div>
+      </ng-template>
       </mwl-calendar-month-view>
 
-      <mwl-calendar-week-view
-        *ngSwitchCase="'week'"
-        [viewDate]="viewDate"
-        [events]="events"
-        [refresh]="refresh"
-        (eventClicked)="handleEvent('Clicked', $event.event)"
-        (eventTimesChanged)="eventTimesChanged($event)"
-      >
-      </mwl-calendar-week-view>
+            <mwl-calendar-week-view
+              *ngSwitchCase="'week'"
+              [viewDate]="viewDate"
+              [events]="events"
+              [refresh]="refresh"
+              (eventClicked)="handleEvent('Clicked', $event.event)"
+              (eventTimesChanged)="eventTimesChanged($event)"
+            >
+            </mwl-calendar-week-view>
 
-      <mwl-calendar-day-view
-        *ngSwitchCase="'day'"
-        [viewDate]="viewDate"
-        [events]="events"
-        [refresh]="refresh"
-        (eventClicked)="handleEvent('Clicked', $event.event)"
-        (eventTimesChanged)="eventTimesChanged($event)"
-      >
-      </mwl-calendar-day-view>
-    </div>
-  </mat-card-content>
-</mat-card>
+            <mwl-calendar-day-view
+              *ngSwitchCase="'day'"
+              [viewDate]="viewDate"
+              [events]="events"
+              [refresh]="refresh"
+              (eventClicked)="handleEvent('Clicked', $event.event)"
+              (eventTimesChanged)="eventTimesChanged($event)"
+            >
+            </mwl-calendar-day-view>
+          </div>
+        </mat-card-content>
+      </mat-card>
