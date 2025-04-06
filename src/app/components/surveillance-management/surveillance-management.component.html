@@ -4,88 +4,109 @@
       <mat-card-title>Gestion des Surveillances</mat-card-title>
       <mat-card-subtitle>Session d'examen #{{ sessionId }}</mat-card-subtitle>
     </mat-card-header>
-    
+
     <mat-card-content>
+
       <div *ngIf="loading" class="loading-container">
         <mat-spinner diameter="40"></mat-spinner>
       </div>
-      
-      <div class="actions-container">
+
+      <div class="actions-container" *ngIf="!loading">
         <button mat-raised-button color="primary" (click)="openAddSurveillanceDialog()">
           <mat-icon>add</mat-icon> Nouvelle Surveillance
         </button>
       </div>
-      
-      <div *ngIf="!loading">
-        <mat-table [dataSource]="surveillances" class="mat-elevation-z4" *ngIf="surveillances.length > 0">
-          <!-- Date Début Column -->
+
+      <div *ngIf="!loading && surveillances.length > 0" class="table-wrapper">
+        <mat-table [dataSource]="surveillances" class="mat-elevation-z4 responsive-table">
+          <!-- Colonne: Statut -->
+          <ng-container matColumnDef="statut">
+            <mat-header-cell *matHeaderCellDef>Statut</mat-header-cell>
+            <mat-cell *matCellDef="let s">
+              <span class="status-badge" [ngClass]="getStatusClass(s.statut)">
+                {{ s.statut }}
+              </span>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Colonne: Date Début -->
           <ng-container matColumnDef="dateDebut">
             <mat-header-cell *matHeaderCellDef>Date Début</mat-header-cell>
-            <mat-cell *matCellDef="let surveillance">{{ formatDate(surveillance.dateDebut) }}</mat-cell>
+            <mat-cell *matCellDef="let s">{{ formatDate(s.dateDebut) }}</mat-cell>
           </ng-container>
-          
-          <!-- Date Fin Column -->
+
+          <!-- Colonne: Date Fin -->
           <ng-container matColumnDef="dateFin">
             <mat-header-cell *matHeaderCellDef>Date Fin</mat-header-cell>
-            <mat-cell *matCellDef="let surveillance">{{ formatDate(surveillance.dateFin) }}</mat-cell>
+            <mat-cell *matCellDef="let s">{{ formatDate(s.dateFin) }}</mat-cell>
           </ng-container>
-          
-          <!-- Salle Column -->
+
+          <!-- Colonne: Salle -->
           <ng-container matColumnDef="salle">
             <mat-header-cell *matHeaderCellDef>Salle</mat-header-cell>
-            <mat-cell *matCellDef="let surveillance">{{ surveillance.salleName || surveillance.salleId || 'Non spécifiée' }}</mat-cell>
+            <mat-cell *matCellDef="let s">
+              {{ s.salleName || s.salleId || 'Non spécifiée' }}
+            </mat-cell>
           </ng-container>
-          
-          <!-- Matière Column -->
+
+          <!-- Colonne: Matière -->
           <ng-container matColumnDef="matiere">
             <mat-header-cell *matHeaderCellDef>Matière</mat-header-cell>
-            <mat-cell *matCellDef="let surveillance">{{ surveillance.matiereName || surveillance.matiereId || 'Non spécifiée' }}</mat-cell>
+            <mat-cell *matCellDef="let s">
+              {{ s.matiereName || s.matiereId || 'Non spécifiée' }}
+            </mat-cell>
           </ng-container>
-          
-          <!-- Enseignant Principal Column -->
+
+          <!-- Colonne: Enseignant Principal -->
           <ng-container matColumnDef="enseignantPrincipal">
             <mat-header-cell *matHeaderCellDef>Enseignant Principal</mat-header-cell>
-            <mat-cell *matCellDef="let surveillance">
-              {{ getEnseignantFullName(surveillance.enseignantPrincipalId) }}
+            <mat-cell *matCellDef="let s">
+              {{ getEnseignantFullName(s.enseignantPrincipalId) }}
             </mat-cell>
           </ng-container>
-          
-          <!-- Enseignant Secondaire Column -->
+
+          <!-- Colonne: Enseignant Secondaire -->
           <ng-container matColumnDef="enseignantSecondaire">
             <mat-header-cell *matHeaderCellDef>Enseignant Secondaire</mat-header-cell>
-            <mat-cell *matCellDef="let surveillance">
-              {{ getEnseignantFullName(surveillance.enseignantSecondaireId) }}
+            <mat-cell *matCellDef="let s">
+              {{ getEnseignantFullName(s.enseignantSecondaireId) }}
             </mat-cell>
           </ng-container>
-          
-          <!-- Actions Column -->
+
+          <!-- Colonne: Actions -->
           <ng-container matColumnDef="actions">
-            <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
-            <mat-cell *matCellDef="let surveillance">
-              <button mat-icon-button color="primary" (click)="openAssignEnseignantDialog(surveillance)" matTooltip="Affecter les enseignants">
-                <mat-icon>assignment_ind</mat-icon>
-              </button>
-              <button mat-icon-button color="accent" (click)="openUpdateSurveillanceDialog(surveillance)" matTooltip="Modifier la surveillance">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button color="warn" (click)="deleteSurveillance(surveillance.id)" matTooltip="Supprimer">
-                <mat-icon>delete</mat-icon>
-              </button>
+            <mat-header-cell *matHeaderCellDef class="action-column">Actions</mat-header-cell>
+            <mat-cell *matCellDef="let s">
+              <div class="action-buttons">
+                <button mat-icon-button color="primary" (click)="openAssignEnseignantDialog(s)" matTooltip="Affecter les enseignants"
+                        >
+                  <mat-icon>assignment_ind</mat-icon>
+                </button>
+                <button mat-icon-button color="accent" (click)="openUpdateSurveillanceDialog(s)" matTooltip="Modifier"
+                        >
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteSurveillance(s.id)" matTooltip="Supprimer"
+                     >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
             </mat-cell>
           </ng-container>
-          
+
           <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-          <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+          <mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="getRowClass(row.statut)"></mat-row>
         </mat-table>
-        
-        <div *ngIf="surveillances.length === 0" class="no-data">
-          <mat-icon>info</mat-icon>
-          <p>Aucune surveillance n'est disponible pour cette session.</p>
-          <button mat-raised-button color="primary" (click)="openAddSurveillanceDialog()">
-            Ajouter une surveillance
-          </button>
-        </div>
       </div>
+
+      <div *ngIf="!loading && surveillances.length === 0" class="no-data">
+        <mat-icon>info</mat-icon>
+        <p>Aucune surveillance n'est disponible pour cette session.</p>
+        <button mat-raised-button color="primary" (click)="openAddSurveillanceDialog()">
+          Ajouter une surveillance
+        </button>
+      </div>
+
     </mat-card-content>
   </mat-card>
-</div> 
+</div>

@@ -2,80 +2,109 @@
   padding: 16px;
 }
 
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 200px;
-}
-
 .actions-container {
-  margin-bottom: 20px;
   display: flex;
   justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.table-wrapper {
+  margin-top: 24px;
 }
 
 mat-table {
   width: 100%;
-  margin-bottom: 20px;
-  overflow-x: auto;
+  table-layout: fixed;
+  border-collapse: collapse;
 }
 
-.small-select {
-  width: 100%;
-  font-size: 12px;
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    padding: 0 8px;
-  }
-  ::ng-deep .mat-mdc-form-field-infix {
-    padding: 8px 0;
-    min-height: 0;
-  }
+mat-header-row,
+mat-row {
+  display: table-row;
 }
 
-.no-data {
+mat-header-cell,
+mat-cell {
+  display: table-cell;
+  vertical-align: middle;
+  padding: 6px 8px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+/* Boutons d'action */
+.action-buttons {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  padding: 40px 0;
-  color: rgba(0, 0, 0, 0.54);
-  
+  align-items: center;
+  gap: 4px;
+  padding-right: 4px;
+
+  button {
+    min-width: 30px;
+    height: 30px;
+    padding: 0;
+  }
+
+  mat-icon {
+    font-size: 18px;
+  }
+}
+
+.action-column {
+  width: 120px;
+  min-width: 110px;
+  max-width: 130px;
+  text-align: center;
+}
+
+/* Badges de statut */
+.status-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+
+  &.status-planned {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+
+  &.status-in-progress {
+    background-color: #fff8e1;
+    color: #ff8f00;
+  }
+
+  &.status-completed {
+    background-color: #e8f5e9;
+    color: #388e3c;
+  }
+
+  &.status-cancelled {
+    background-color: #ffebee;
+    color: #d32f2f;
+    text-decoration: line-through;
+  }
+}
+
+/* Message "aucune donnée" */
+.no-data {
+  text-align: center;
+  padding: 32px 0;
+  color: #666;
+
   mat-icon {
     font-size: 48px;
-    width: 48px;
-    height: 48px;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
+    color: #aaa;
   }
-  
+
   p {
-    margin-bottom: 16px;
-    font-size: 16px;
+    margin: 8px 0 12px;
   }
 }
-
-mat-header-cell, mat-cell {
-  justify-content: center;
-  padding: 0 8px;
-}
-
-mat-header-row, mat-row {
-  min-height: 64px;
-}
-
-@media screen and (max-width: 960px) {
-  mat-table {
-    display: block;
-    overflow-x: auto;
-  }
-  
-  .mat-column-dateDebut,
-  .mat-column-dateFin {
-    min-width: 120px;
-  }
-  
-  .mat-column-enseignantPrincipal,
-  .mat-column-enseignantSecondaire {
-    min-width: 200px;
-  }
-} 
