@@ -29,7 +29,8 @@ export class SurveillanceManagementComponent implements OnInit {
   sessionId: number | null = null;
   loading = false;
   
-  displayedColumns: string[] = ['dateDebut', 'dateFin', 'salle', 'matiere', 'enseignantPrincipal', 'enseignantSecondaire', 'actions'];
+  // Ajout de la colonne statut
+  displayedColumns: string[] = ['statut', 'dateDebut', 'dateFin', 'salle', 'matiere', 'enseignantPrincipal', 'enseignantSecondaire', 'actions'];
   
   constructor(
     private surveillanceService: SurveillanceService,
@@ -51,6 +52,38 @@ export class SurveillanceManagementComponent implements OnInit {
     });
 
     this.loadEnseignants();
+  }
+
+  // Nouvelle méthode pour obtenir la classe CSS en fonction du statut
+  getStatusClass(statut: string): string {
+    switch (statut) {
+      case 'PLANIFIEE':
+        return 'status-planned';
+      case 'EN_COURS':
+        return 'status-in-progress';
+      case 'TERMINEE':
+        return 'status-completed';
+      case 'ANNULEE':
+        return 'status-cancelled';
+      default:
+        return '';
+    }
+  }
+  
+  // Nouvelle méthode pour obtenir la classe CSS de la ligne en fonction du statut
+  getRowClass(statut: string): string {
+    switch (statut) {
+      case 'PLANIFIEE':
+        return 'row-planned';
+      case 'EN_COURS':
+        return 'row-in-progress';
+      case 'TERMINEE':
+        return 'row-completed';
+      case 'ANNULEE':
+        return 'row-cancelled';
+      default:
+        return '';
+    }
   }
 
   loadSurveillances(): void {
@@ -184,4 +217,4 @@ export class SurveillanceManagementComponent implements OnInit {
       panelClass: ['error-snackbar']
     });
   }
-} 
+}

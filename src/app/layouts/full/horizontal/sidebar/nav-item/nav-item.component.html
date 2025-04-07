@@ -3,7 +3,8 @@
   class="cursor-pointer menuLink"
   (click)="onItemSelected(item)"
   [ngClass]="{
-    activeMenu: item.route ? router.isActive(item.route, true) : false
+    activeMenu: (item.route ? router.isActive(item.route, true) : false) || 
+                (item.route === 'apps/Sessions' && router.url.includes('/surveillance-management/'))
   }"
 >
 @if(item.subItemIcon){

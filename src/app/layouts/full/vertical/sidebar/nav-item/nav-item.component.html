@@ -11,9 +11,10 @@
   mat-list-item
   (click)="onItemSelected(item)"
   [ngClass]="{
-    'mat-toolbar mat-primary activeMenu': item.route
+    'mat-toolbar mat-primary activeMenu': (item.route
       ? router.isActive(item.route, true)
-      : false,
+      : false) || 
+      (item.route === 'apps/Sessions' && router.url.includes('/surveillance-management/')),
     expanded: expanded,
     disabled: item.disabled
   }"

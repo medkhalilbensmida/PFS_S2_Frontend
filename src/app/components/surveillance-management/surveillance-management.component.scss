@@ -2,160 +2,109 @@
   box-shadow: none;
 }
 
-.loading-spinner {
+.actions-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 24px;
+  justify-content: flex-end;
+  margin-bottom: 16px;
 }
 
-.event-details {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 24px;
-  gap: 24px;
-  text-align: center;
-  width: 100%;
-}
-
-.availability-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  min-width: 240px;
-  padding: 16px 32px;
-  border-radius: 32px;
+.table-wrapper {
   margin-top: 24px;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+}
 
-  &.available {
-    background-color: #f44336;
-    color: white;
-    &:hover {
-      background-color: darken(#f44336, 10%);
-      box-shadow: 0 6px 12px rgba(244,67,54,0.3);
-    }
+mat-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+mat-header-row,
+mat-row {
+  display: table-row;
+}
+
+mat-header-cell,
+mat-cell {
+  display: table-cell;
+  vertical-align: middle;
+  padding: 6px 8px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+/* Boutons d'action */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding-right: 4px;
+
+  button {
+    min-width: 30px;
+    height: 30px;
+    padding: 0;
   }
 
-  &.unavailable {
-    background-color: #4caf50;
-    color: white;
-    &:hover {
-      background-color: darken(#4caf50, 10%);
-      box-shadow: 0 6px 12px rgba(76,175,80,0.3);
-    }
-  }
-
-  &.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    
-    &:hover {
-      box-shadow: none;
-      background-color: inherit;
-    }
-  }
-
-  .button-icon {
-    font-size: 28px !important;
-    width: 28px !important;
-    height: 28px !important;
-  }
-
-  .button-text {
-    font-size: 20px !important;
-    font-weight: 500;
-    letter-spacing: 0.5px;
+  mat-icon {
+    font-size: 18px;
   }
 }
 
-::ng-deep {
-  .cal-open-day-events {
-    padding: 24px !important;
-    
-    .event-details {
-      background-color: rgba(0, 0, 0, 0.03);
-      border-radius: 16px;
-      margin-bottom: 20px;
-      padding: 24px !important;
-      
-      .event-info {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 16px;
-        width: 100%;
-        
-        mat-icon {
-          font-size: 36px !important;
-          width: 36px !important;
-          height: 36px !important;
-          line-height: 36px !important;
-          color: #3f51b5;
-        }
+.action-column {
+  width: 120px;
+  min-width: 110px;
+  max-width: 130px;
+  text-align: center;
+}
 
-        span {
-          font-size: 24px !important;
-          line-height: 1.8 !important;
-          white-space: pre-line;
-          font-weight: 500 !important;
-          text-align: center;
-          width: 100%;
-          color: rgba(0, 0, 0, 0.87);
+/* Badges de statut */
+.status-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
 
-          &::first-line {
-            font-size: 28px !important;
-            font-weight: 600 !important;
-            color: #3f51b5;
-          }
-        }
-      }
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      }
-
-      &.disabled-event {
-        background-color: rgba(0, 0, 0, 0.02);
-        
-        &:hover {
-          background-color: rgba(0, 0, 0, 0.02);
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-      }
-    }
+  &.status-planned {
+    background-color: #e3f2fd;
+    color: #1976d2;
   }
 
-  .cal-month-view {
-    .cal-day-cell {
-      min-height: 150px !important;
-    }
-
-    .cal-cell-row .cal-cell:hover {
-      background-color: rgba(0, 0, 0, 0.04) !important;
-    }
-
-    .cal-day-number {
-      font-size: 20px !important;
-      margin: 8px !important;
-      opacity: 0.8;
-    }
-
-    .cal-event-title {
-      font-size: 16px !important;
-    }
+  &.status-in-progress {
+    background-color: #fff8e1;
+    color: #ff8f00;
   }
 
-  .cal-event-title.disabled {
-    cursor: not-allowed !important;
+  &.status-completed {
+    background-color: #e8f5e9;
+    color: #388e3c;
+  }
+
+  &.status-cancelled {
+    background-color: #ffebee;
+    color: #d32f2f;
+    text-decoration: line-through;
+  }
+}
+
+/* Message "aucune donnée" */
+.no-data {
+  text-align: center;
+  padding: 32px 0;
+  color: #666;
+
+  mat-icon {
+    font-size: 48px;
+    margin-bottom: 8px;
+    color: #aaa;
+  }
+
+  p {
+    margin: 8px 0 12px;
   }
 }
