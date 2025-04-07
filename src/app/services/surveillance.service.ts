@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { API_CONFIG } from '../pages/authentication/api.config';
 
 export interface Surveillance {
@@ -176,4 +177,55 @@ export class SurveillanceService {
   getAllMatieres(): Observable<Matiere[]> {
     return this.http.get<Matiere[]>(`${this.apiUrl}/matieres/All`);
   }
+
+
+   /*----PARTIE DISPONIBILITE-----------*/
+
+
+ /**
+   * Get disponibilités for the current enseignant
+   */
+ getMyDisponibilites(): Observable<DisponibiliteEnseignantDTO[]> {
+  return this.http.get<DisponibiliteEnseignantDTO[]>(`${this.apiUrl}/disponibilites/my-disponibilities`);
 }
+/**
+ * Mark disponibilité for a surveillance
+ */
+markDisponibilite(surveillanceId: number): Observable<DisponibiliteEnseignantDTO> {
+  // Use proper URL parameters
+  return this.http.put<DisponibiliteEnseignantDTO>(
+    `${this.apiUrl}/disponibilites/${surveillanceId}?estDisponible=true`,
+    null  // No body needed, using query parameter instead
+  );
+}
+
+/**
+ * Cancel disponibilité for a surveillance
+ */
+cancelDisponibilite(surveillanceId: number): Observable<DisponibiliteEnseignantDTO> {
+  // Use proper URL parameters
+  return this.http.put<DisponibiliteEnseignantDTO>(
+    `${this.apiUrl}/disponibilites/${surveillanceId}?estDisponible=false`,
+    null  // No body needed, using query parameter instead
+  );
+}
+
+
+/**
+ * Check if current enseignant is available for a surveillance
+ */
+checkDisponibilite(surveillanceId: number): Observable<boolean> {
+  return this.http.get<DisponibiliteEnseignantDTO[]>(
+    `${this.apiUrl}/disponibilites/surveillance/${surveillanceId}`
+  ).pipe(
+    map(disponibilites => {
+      // Find the current user's disponibilité
+      const disponibilite = disponibilites[0];
+      return disponibilite ? disponibilite.estDisponible : false;
+    })
+  );
+}
+  }
+
+ 
+

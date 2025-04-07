@@ -24,10 +24,16 @@ export const navItems: NavItem[] = [
     navCap: 'Gestion des Surveillances',
   },
   {
+    displayName: 'Mes Disponibilités',
+    iconName: 'solar:calendar-line-duotone',
+    route: 'availability-calendar',
+  },
+  {
     displayName: 'Affectation des Surveillances',
     iconName: 'solar:user-hand-up-linear',
     route: '/surveillance-assignment',
   },
+
   {
     divider: true,
     navCap: 'Gestion de Compte',

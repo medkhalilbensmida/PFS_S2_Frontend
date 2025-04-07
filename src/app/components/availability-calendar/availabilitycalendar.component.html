@@ -1,0 +1,151 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content class="p-16">
+    <!-- Add this under the mat-card-content opening tag -->
+    <div *ngIf="loading" class="loading-spinner">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <div class="d-flex align-items-center">
+      <mat-card-title class="m-b-0">Veuillez cliquer sur une surveillance pour déclarer votre disponibilité/non diponibilité </mat-card-title>
+      
+    </div>
+  </mat-card-content>
+</mat-card>
+<!--  -->
+
+<mat-card class="cardWithShadow overflow-hidden">
+  <mat-toolbar color="primary" class="no-shadow">
+    <mat-toolbar-row>
+      <div class="d-flex align-items-center w-100">
+        <span>{{ viewDate | calendarDate : view + "ViewTitle" : "en" }}</span>
+        <div class="m-l-auto d-flex align-items-center">
+          <button
+            mat-button
+            (click)="view = 'month'"
+            [class.active]="view === 'month'"
+          >
+            Month
+          </button>
+          <button
+            mat-button
+            (click)="view = 'week'"
+            [class.active]="view === 'week'"
+          >
+            Week
+          </button>
+          <button
+            mat-button
+            (click)="view = 'day'"
+            [class.active]="view === 'day'"
+          >
+            Day
+          </button>
+          <button
+            mat-icon-button
+            (click)="view = 'month'"
+            [class.active]="view === 'month'"
+          >
+            <mat-icon>view_module</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="view = 'week'"
+            [class.active]="view === 'week'"
+          >
+            <mat-icon>view_week</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="view = 'day'"
+            [class.active]="view === 'day'"
+          >
+            <mat-icon>view_day</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            mwlCalendarPreviousView
+            [view]="view"
+            [(viewDate)]="viewDate"
+          >
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <button mat-icon-button mwlCalendarToday [(viewDate)]="viewDate">
+            <mat-icon>today</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            mwlCalendarNextView
+            [view]="view"
+            [(viewDate)]="viewDate"
+          >
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </div>
+    </mat-toolbar-row>
+  </mat-toolbar>
+  <mat-card-content>
+    <!-- ============================================================== -->
+    <!-- Event Calendar -->
+    <!-- ============================================================== -->
+    <div [ngSwitch]="view">
+      <mwl-calendar-month-view
+      *ngSwitchCase="'month'"
+      [viewDate]="viewDate"
+      [events]="events"
+      [refresh]="refresh"
+      [activeDayIsOpen]="activeDayIsOpen"
+      (dayClicked)="dayClicked($event.day)"
+      (eventClicked)="handleEvent('Clicked', $event.event)"
+      (eventTimesChanged)="eventTimesChanged($event)"
+      (viewDateChange)="closeOpenMonthViewDay()"
+
+      >
+      <ng-template
+        mwlCalendarEventTitle
+        let-event="event"
+      >
+      <div class="event-details">
+        <div class="event-info">
+          <mat-icon>event</mat-icon>
+          <span [innerHTML]="event.title | nl2br"></span>
+        </div>
+        <button mat-flat-button
+          class="availability-button"
+          [class.available]="event.meta?.isDisponible" 
+          [class.unavailable]="!event.meta?.isDisponible"
+          [class.disabled]="!event.meta?.canToggle"
+          [color]="event.meta?.isDisponible ? 'warn' : 'primary'"
+          (click)="$event.stopPropagation(); toggleDisponibilite(event.meta.surveillance.id)"
+          [disabled]="!event.meta?.canToggle"
+          [matTooltip]="getButtonTooltip(event.meta.surveillance)"
+          *ngIf="shouldShowButton(event.meta.surveillance)">
+    <mat-icon class="button-icon">{{ event.meta?.isDisponible ? 'close' : 'check' }}</mat-icon>
+    <span class="button-text">{{ event.meta?.isDisponible ? 'Non disponible' : 'Disponible' }}</span>
+  </button>
+      </div>
+      </ng-template>
+      </mwl-calendar-month-view>
+
+            <mwl-calendar-week-view
+              *ngSwitchCase="'week'"
+              [viewDate]="viewDate"
+              [events]="events"
+              [refresh]="refresh"
+              (eventClicked)="handleEvent('Clicked', $event.event)"
+              (eventTimesChanged)="eventTimesChanged($event)"
+            >
+            </mwl-calendar-week-view>
+
+            <mwl-calendar-day-view
+              *ngSwitchCase="'day'"
+              [viewDate]="viewDate"
+              [events]="events"
+              [refresh]="refresh"
+              (eventClicked)="handleEvent('Clicked', $event.event)"
+              (eventTimesChanged)="eventTimesChanged($event)"
+            >
+            </mwl-calendar-day-view>
+          </div>
+        </mat-card-content>
+      </mat-card>
