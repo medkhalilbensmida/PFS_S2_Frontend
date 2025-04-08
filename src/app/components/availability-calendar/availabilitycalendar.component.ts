@@ -1,7 +1,8 @@
 
 import { map, catchError, finalize } from 'rxjs/operators';
+
 import { forkJoin } from 'rxjs';
-import { SurveillanceService, Surveillance } from '../../services/surveillance.service';
+import { SurveillanceService, Surveillance, DisponibiliteEnseignantDTO } from '../../services/surveillance.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   Component,
@@ -329,12 +330,15 @@ export class AppAvailabilitycalendarComponent implements OnInit {
 // Add this method declaration
 loadDisponibilites(): void {
   if (this.surveillances.length > 0) {
+    console.log('Loading disponibilites...');
     this.surveillanceService.getMyDisponibilites()
       .subscribe({
         next: (disponibilites) => {
+          console.log('Loaded disponibilites:', disponibilites);
           this.disponibilites = new Map(
             disponibilites.map(d => [d.surveillanceId!, d.estDisponible])
           );
+          console.log('Updated disponibilites map:', Array.from(this.disponibilites.entries()));
           this.updateCalendarEvents();
         },
         error: (error) => {
@@ -452,16 +456,33 @@ getButtonTooltip(surveillance: Surveillance): string {
     this.refresh.next(null);
   }
 
-  toggleDisponibilite(surveillanceId: number) {
-    const isCurrentlyDisponible = this.disponibilites.get(surveillanceId);
-    
-    const action = isCurrentlyDisponible 
-      ? this.surveillanceService.cancelDisponibilite(surveillanceId)
-      : this.surveillanceService.markDisponibilite(surveillanceId);
+  // In availabilitycalendar.component.ts
+
+toggleDisponibilite(surveillanceId: number): void {
+  if (!surveillanceId) return;
+
+  const currentUser = this.authService.getUserData();
+  console.log('Current user:', currentUser);
   
-    action.pipe(
-      catchError(error => {
+  const isCurrentlyDisponible = this.disponibilites.get(surveillanceId);
+  console.log(`Current disponibilite for surveillance ${surveillanceId}:`, isCurrentlyDisponible);
+  console.log('User making request:', currentUser?.id);
+  
+  const action = isCurrentlyDisponible 
+    ? this.surveillanceService.cancelDisponibilite(surveillanceId)
+    : this.surveillanceService.markDisponibilite(surveillanceId);
+
+  action
+    .pipe(
+      catchError((error: any) => {
         console.error('Error toggling disponibilite:', error);
+        console.error('Error details:', {
+          status: error.status,
+          statusText: error.statusText,
+          error: error.error,
+          user: currentUser
+        });
+        
         let message;
         if (error.status === 403) {
           message = 'Vous devez être connecté en tant qu\'enseignant pour effectuer cette action';
@@ -473,22 +494,34 @@ getButtonTooltip(surveillance: Surveillance): string {
         this.showError(message);
         return throwError(() => error);
       })
-    ).subscribe({
-      next: (response) => {
-        this.disponibilites.set(surveillanceId, !isCurrentlyDisponible);
-        this.updateCalendarEvents();
-        this.showSuccess(isCurrentlyDisponible 
-          ? 'Disponibilité annulée' 
-          : 'Disponibilité marquée'
-        );
+    )
+    .subscribe(
+      (response: any) => {
+        console.log('Toggle disponibilite response:', response);
+        console.log('Response user ID:', response.enseignantId);
+        console.log('Current user ID:', currentUser?.id);
+        
+        if (response && typeof response.estDisponible === 'boolean') {
+          console.log(`Updating local state for surveillance ${surveillanceId} to:`, response.estDisponible);
+          this.disponibilites.set(surveillanceId, response.estDisponible);
+          this.updateCalendarEvents();
+          
+          const message = response.estDisponible 
+            ? 'Vous êtes maintenant disponible pour cette surveillance'
+            : 'Vous n\'êtes plus disponible pour cette surveillance';
+          this.showSuccess(message);
+        } else {
+          console.error('Invalid response format:', response);
+          this.showError('Réponse invalide du serveur');
+          this.loadDisponibilites();
+        }
       },
-      error: () => {
-        // Error already handled in catchError
+      error => {
+        console.error('Error in subscription:', error);
       }
-    });
-  }
-
-
+    );
+}
+  
 
 
   private showSuccess(message: string): void {

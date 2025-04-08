@@ -3,6 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { API_CONFIG } from '../pages/authentication/api.config';
+import { HttpParams, HttpHeaders } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
+import { AuthService } from '../pages/authentication/services/auth.service';
+
 
 export interface Surveillance {
   id: number;
@@ -73,7 +77,7 @@ export class SurveillanceService {
   
   private apiUrl = `${API_CONFIG.BASE_URL}`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private authService: AuthService) { }
 
   /**
    * Récupère la liste de toutes les surveillances
@@ -188,28 +192,75 @@ export class SurveillanceService {
  getMyDisponibilites(): Observable<DisponibiliteEnseignantDTO[]> {
   return this.http.get<DisponibiliteEnseignantDTO[]>(`${this.apiUrl}/disponibilites/my-disponibilities`);
 }
-/**
- * Mark disponibilité for a surveillance
- */
+
+
 markDisponibilite(surveillanceId: number): Observable<DisponibiliteEnseignantDTO> {
-  // Use proper URL parameters
+  console.log(`Sending PUT request to mark disponibilite for surveillance ${surveillanceId}`);
+  
+  const url = `${this.apiUrl}/disponibilites/surveillance/${surveillanceId}`;
+  const currentUser = this.authService.getUserData();
+  
+  // Add enseignantId to the request body
+  const body = {
+    enseignantId: currentUser?.id
+  };
+
   return this.http.put<DisponibiliteEnseignantDTO>(
-    `${this.apiUrl}/disponibilites/${surveillanceId}?estDisponible=true`,
-    null  // No body needed, using query parameter instead
+    url,
+    body, // Send the body with enseignantId
+    {
+      params: new HttpParams().set('estDisponible', 'true'),
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      }),
+      withCredentials: true
+    }
+  ).pipe(
+    tap(response => {
+      console.log('Mark disponibilite response:', response);
+      if (response.enseignantId !== currentUser?.id) {
+        console.error('User ID mismatch:', {
+          responseUserId: response.enseignantId,
+          currentUserId: currentUser?.id
+        });
+      }
+    })
   );
 }
 
-/**
- * Cancel disponibilité for a surveillance
- */
 cancelDisponibilite(surveillanceId: number): Observable<DisponibiliteEnseignantDTO> {
-  // Use proper URL parameters
+  console.log(`Sending PUT request to cancel disponibilite for surveillance ${surveillanceId}`);
+  
+  const url = `${this.apiUrl}/disponibilites/surveillance/${surveillanceId}`;
+  const currentUser = this.authService.getUserData();
+
+  // Add enseignantId to the request body
+  const body = {
+    enseignantId: currentUser?.id
+  };
+
   return this.http.put<DisponibiliteEnseignantDTO>(
-    `${this.apiUrl}/disponibilites/${surveillanceId}?estDisponible=false`,
-    null  // No body needed, using query parameter instead
+    url,
+    body, // Send the body with enseignantId
+    {
+      params: new HttpParams().set('estDisponible', 'false'),
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      }),
+      withCredentials: true
+    }
+  ).pipe(
+    tap(response => {
+      console.log('Cancel disponibilite response:', response);
+      if (response.enseignantId !== currentUser?.id) {
+        console.error('User ID mismatch:', {
+          responseUserId: response.enseignantId,
+          currentUserId: currentUser?.id
+        });
+      }
+    })
   );
 }
-
 
 /**
  * Check if current enseignant is available for a surveillance
@@ -225,7 +276,7 @@ checkDisponibilite(surveillanceId: number): Observable<boolean> {
     })
   );
 }
-  }
-
+  
  
 
+}
