@@ -128,7 +128,7 @@ export class CalendarDialogComponent {
   providers: [provideNativeDateAdapter(), CalendarDateFormatter],
 })
 export class AppAvailabilitycalendarComponent implements OnInit {
-[x: string]: any;
+  //[x: string]: any;
   dialogRef: MatDialogRef<CalendarDialogComponent> = Object.create(TemplateRef);
   //dialogRef2: MatDialogRef<CalendarFormDialogComponent> =Object.create(TemplateRef);
 
@@ -289,52 +289,64 @@ export class AppAvailabilitycalendarComponent implements OnInit {
 
 
   /*--------------*/
-  loadSurveillances() {
-    this.loading = true;
+  isTeacher(): boolean {
     const currentUser = this.authService.getUserData();
-    
-    forkJoin({
-      all: this.surveillanceService.getAllSurveillances(),
-      my: this.surveillanceService.getMyDisponibilites()
-    })
-    .pipe(
-      finalize(() => this.loading = false)
-    )
-    .subscribe({
-      next: ({ all, my }) => {
-        // Check if user is an enseignant
-        if (currentUser && currentUser.role === 'ROLE_ENSEIGNANT') {
-          const currentEnseignantId = currentUser.id;
-          
-          // Filter surveillances
-          this.surveillances = all.filter(surveillance => 
-            // Show EN_COURS to everyone
-            surveillance.statut === 'EN_COURS' ||
-            // Show other statuses only if they are assigned as principal or secondairy teacher
-            ((surveillance.enseignantPrincipalId === currentEnseignantId || surveillance.enseignantSecondaireId === currentEnseignantId) && 
-             ['PLANIFIEE', 'TERMINEE', 'ANNULEE'].includes(surveillance.statut))
-          );
-        } else {
-          // For admin or other roles, show all surveillances
-          this.surveillances = all;
-        }
+    return currentUser?.role === 'ROLE_ENSEIGNANT';
+  }
+  
+  // In availabilitycalendar.component.ts
+
+loadSurveillances() {
+  this.loading = true;
+  const currentUser = this.authService.getUserData();
+  
+  forkJoin({
+    all: this.surveillanceService.getAllSurveillances(),
+    my: this.surveillanceService.getMyDisponibilites()
+  })
+  .pipe(
+    finalize(() => this.loading = false)
+  )
+  .subscribe({
+    next: ({ all, my }) => {
+      // Check if user is an enseignant
+      if (currentUser && currentUser.role === 'ROLE_ENSEIGNANT') {
+        const currentEnseignantId = currentUser.id;
         
-        this.loadDisponibilites();
-      },
-      error: (error) => {
-        console.error('Error loading surveillances:', error);
-        this.showError('Erreur lors du chargement des surveillances');
+        // Filter surveillances
+        this.surveillances = all.filter(surveillance => {
+          // Always show EN_COURS surveillances regardless of teacher assignments
+          if (surveillance.statut === 'EN_COURS') {
+            return true;
+          }
+
+          // For other statuses, show only if user is assigned
+          if (['PLANIFIEE', 'TERMINEE', 'ANNULEE'].includes(surveillance.statut)) {
+            return surveillance.enseignantPrincipalId === currentEnseignantId || 
+                   surveillance.enseignantSecondaireId === currentEnseignantId;
+          }
+
+          return false;
+        });
+      } else {
+        // For admin or other roles, show all surveillances
+        this.surveillances = all;
       }
-    });
+      
+      this.loadDisponibilites();
+    },
+    error: (error) => {
+      console.error('Error loading surveillances:', error);
+      this.showError('Erreur lors du chargement des surveillances');
+    }
+  });
 }
-// Add this method declaration
-loadDisponibilites(): void {
+private loadDisponibilites(): void {
   if (this.surveillances.length > 0) {
-    console.log('Loading disponibilites...');
     this.surveillanceService.getMyDisponibilites()
       .subscribe({
         next: (disponibilites) => {
-          console.log('Loaded disponibilites:', disponibilites);
+          console.log('Loading disponibilites:', disponibilites);
           this.disponibilites = new Map(
             disponibilites.map(d => [d.surveillanceId!, d.estDisponible])
           );
