@@ -14,4 +14,6 @@ export interface NavItem {
   children?: NavItem[];
   ddType?: string;
   subItemIcon?: boolean;
+  roles?: string[]; // Added roles property
+
 }

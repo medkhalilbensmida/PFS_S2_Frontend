@@ -5,6 +5,7 @@ import { AuthGuard } from './pages/authentication/guards/auth.guard';
 import { SurveillanceAssignmentComponent } from './components/surveillance-assignment/surveillance-assignment.component';
 import { SurveillanceManagementComponent } from './components/surveillance-management/surveillance-management.component';
 import { AppAvailabilitycalendarComponent } from './components/availability-calendar/availabilitycalendar.component';
+import { enseignantGuard } from './pages/authentication/guards/enseignant.guard';
 
 export const routes: Routes = [
   {
@@ -32,6 +33,7 @@ export const routes: Routes = [
       {
         path: 'availability-calendar',
         component: AppAvailabilitycalendarComponent,
+        canActivate: [enseignantGuard], // Add the guard here
         data: {
           title: 'Disponibilités des Surveillances',
           urls: [

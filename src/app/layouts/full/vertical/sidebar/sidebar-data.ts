@@ -27,6 +27,8 @@ export const navItems: NavItem[] = [
     displayName: 'Mes Disponibilités',
     iconName: 'solar:calendar-line-duotone',
     route: 'availability-calendar',
+    roles: ['ROLE_ENSEIGNANT']  // only visible to teachers
+
   },
   {
     displayName: 'Affectation des Surveillances',

@@ -19,6 +19,8 @@ import { HeaderComponent } from './vertical/header/header.component';
 import { AppBreadcrumbComponent } from './shared/breadcrumb/breadcrumb.component';
 import { CustomizerComponent } from './shared/customizer/customizer.component';
 import { MatNativeDateModule } from '@angular/material/core';
+import { NavItem } from './vertical/sidebar/nav-item/nav-item';
+import { AuthService } from 'src/app/pages/authentication/services/auth.service';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
@@ -54,7 +56,7 @@ interface AppItem {
   encapsulation: ViewEncapsulation.None,
 })
 export class FullComponent implements OnInit, OnDestroy {
-  navItems = navItems;
+  public navItems: NavItem[] = [];
 
   @ViewChild('leftsidenav') public sidenav!: MatSidenav;
   @ViewChild('content', { static: true }) content!: MatSidenavContent;
@@ -139,7 +141,8 @@ export class FullComponent implements OnInit, OnDestroy {
     private mediaMatcher: MediaMatcher,
     @Inject(Router) private router: Router,
     private breakpointObserver: BreakpointObserver,
-    private navService: NavService
+    private navService: NavService,
+    public authService: AuthService
   ) {
     this.htmlElement = document.querySelector('html') as HTMLHtmlElement;
     this.setupLayoutChanges();
@@ -147,8 +150,12 @@ export class FullComponent implements OnInit, OnDestroy {
     this.setupRouterEvents();
   }
 
-  ngOnInit(): void {}
-
+  ngOnInit(): void {
+    // Filter out any nav item that defines roles not including the current user role.
+    this.navItems = navItems.filter(item =>
+      !item.roles || item.roles.includes(this.authService.getUserRole()!)
+    );
+  }
   ngOnDestroy(): void {
     this.layoutChangesSubscription.unsubscribe();
   }
