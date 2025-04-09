@@ -228,6 +228,11 @@ markDisponibilite(surveillanceId: number): Observable<DisponibiliteEnseignantDTO
   );
 }
 
+getEnseignantsForSession(sessionId:number) : {
+  const url = `${this.apiUrl}/surveillances/`
+
+}
+
 cancelDisponibilite(surveillanceId: number): Observable<DisponibiliteEnseignantDTO> {
   console.log(`Sending PUT request to cancel disponibilite for surveillance ${surveillanceId}`);
   

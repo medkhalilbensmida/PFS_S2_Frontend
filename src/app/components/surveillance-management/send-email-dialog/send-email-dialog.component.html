@@ -1,0 +1,63 @@
+<!-- send-email-dialog.component.html -->
+<h2 mat-dialog-title>Envoyer des emails</h2>
+
+<form [formGroup]="emailForm" (ngSubmit)="onSubmit()">
+  <mat-dialog-content>
+    <div class="form-container">
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Modèle d'email</mat-label>
+          <mat-select formControlName="template">
+            <mat-option *ngFor="let template of emailTemplates" [value]="template.value">
+              {{ template.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div *ngIf="emailForm.get('template')?.value === 'custom'" class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Message personnalisé</mat-label>
+          <textarea matInput formControlName="customMessage" rows="5"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-checkbox formControlName="sendToAll">
+          Envoyer à tous les professeurs de la session
+        </mat-checkbox>
+      </div>
+
+      <div *ngIf="!emailForm.get('sendToAll')?.value" class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Sélectionner les professeurs</mat-label>
+          <mat-select formControlName="selectedProfessors" multiple>
+            <mat-option *ngFor="let prof of professorOptions" [value]="prof.value">
+              {{ prof.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Sélectionner les surveillances concernées</mat-label>
+          <mat-select formControlName="selectedSurveillances" multiple>
+            <mat-option *ngFor="let surv of surveillanceOptions" [value]="surv.value">
+              {{ surv.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="onCancel()" [disabled]="loading">Annuler</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="emailForm.invalid || loading">
+      <mat-icon>send</mat-icon>
+      <span *ngIf="!loading">Envoyer</span>
+      <mat-spinner *ngIf="loading" diameter="20" class="spinner-in-button"></mat-spinner>
+    </button>
+  </mat-dialog-actions>
+</form>
