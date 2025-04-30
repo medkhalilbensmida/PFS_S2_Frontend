@@ -35,6 +35,12 @@ export const navItems: NavItem[] = [
     iconName: 'solar:user-hand-up-linear',
     route: '/surveillance-assignment',
   },
+  {
+    displayName: 'Génération des Rapports',
+    iconName: 'solar:file-download-line-duotone',
+    route: '/reports',
+    roles: ['ROLE_ADMIN']  // only visible to admin
+  },
 
   {
     divider: true,

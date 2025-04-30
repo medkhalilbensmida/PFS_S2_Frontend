@@ -1,0 +1,105 @@
+<div class="container">
+    <mat-card class="cardWithShadow">
+      <mat-card-header>
+        <mat-card-title>Génération de Rapports et Convocations</mat-card-title>
+        <mat-card-subtitle>Exportez les données et générez les convocations</mat-card-subtitle>
+      </mat-card-header>
+  
+      <mat-card-content>
+        <form [formGroup]="filterForm" class="filter-form">
+          <mat-expansion-panel class="cardWithShadow mb-4" expanded>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon class="m-r-8">filter_list</mat-icon>
+                Filtres
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+  
+            <div class="row">
+              <!-- Année Universitaire -->
+              <div class="col-md-6 col-lg-3">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Année Universitaire</mat-label>
+                  <input matInput formControlName="anneeUniversitaire" placeholder="Ex: 2024-2025">
+                  <mat-icon matSuffix>calendar_today</mat-icon>
+                </mat-form-field>
+              </div>
+  
+              <!-- Semestre -->
+              <div class="col-md-6 col-lg-3">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Semestre</mat-label>
+                  <mat-select formControlName="semestre">
+                    <mat-option [value]="null">Tous</mat-option>
+                    <mat-option *ngFor="let sem of semestres" [value]="sem">
+                      {{sem}}
+                    </mat-option>
+                  </mat-select>
+                  <mat-icon matSuffix>school</mat-icon>
+                </mat-form-field>
+              </div>
+  
+              <!-- Type Session -->
+              <div class="col-md-6 col-lg-3">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Type de Session</mat-label>
+                  <mat-select formControlName="typeSession">
+                    <mat-option [value]="null">Tous</mat-option>
+                    <mat-option *ngFor="let type of typeSessions" [value]="type">
+                      {{type}}
+                    </mat-option>
+                  </mat-select>
+                  <mat-icon matSuffix>event</mat-icon>
+                </mat-form-field>
+              </div>
+  
+              <!-- ID Enseignant -->
+              <div class="col-md-6 col-lg-3">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>ID Enseignant</mat-label>
+                  <input matInput type="number" formControlName="enseignantId">
+                  <mat-icon matSuffix>person</mat-icon>
+                  <mat-hint>Requis pour la convocation individuelle</mat-hint>
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-expansion-panel>
+  
+          <!-- Actions -->
+          <div class="row">
+            <div class="col-12">
+              <mat-divider class="m-t-16 m-b-16"></mat-divider>
+              <div class="d-flex gap-2 justify-content-center flex-wrap">
+                <button mat-raised-button color="primary" (click)="exportToExcel()" [disabled]="loading" class="action-button">
+                  <mat-icon>description</mat-icon>
+                  Export Excel
+                </button>
+  
+                <button mat-raised-button color="accent" (click)="exportToCsv()" [disabled]="loading" class="action-button">
+                  <mat-icon>table_view</mat-icon>
+                  Export CSV
+                </button>
+  
+                <button mat-raised-button color="warn" (click)="generateConvocation()" 
+                        [disabled]="loading || !filterForm.get('enseignantId')?.value"
+                        class="action-button">
+                  <mat-icon>person</mat-icon>
+                  Générer Convocation
+                </button>
+  
+                <button mat-raised-button color="warn" (click)="generateAllConvocations()" [disabled]="loading" class="action-button">
+                  <mat-icon>groups</mat-icon>
+                  Générer Toutes les Convocations
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+  
+        <!-- Loading Spinner -->
+        <div *ngIf="loading" class="loading-overlay">
+          <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>

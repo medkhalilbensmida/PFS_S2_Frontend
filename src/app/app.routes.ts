@@ -6,7 +6,7 @@ import { SurveillanceAssignmentComponent } from './components/surveillance-assig
 import { SurveillanceManagementComponent } from './components/surveillance-management/surveillance-management.component';
 import { AppAvailabilitycalendarComponent } from './components/availability-calendar/availabilitycalendar.component';
 import { enseignantGuard } from './pages/authentication/guards/enseignant.guard';
-
+import { ReportGenerationComponent } from './components/report-generation/report-generation.component';
 export const routes: Routes = [
   {
     path: '',
@@ -64,6 +64,20 @@ export const routes: Routes = [
             { title: 'Affectation Surveillances' },
           ],
         },
+      },
+      {
+        path: 'reports',
+        component: ReportGenerationComponent,
+        canActivate: [AuthGuard],
+        data: { 
+          roles: ['ROLE_ADMIN'],
+          title: 'Rapports et Convocations',
+          breadcrumb: true,
+          urls: [
+            { title: 'Dashboard', url: '/dashboard' },
+            { title: 'Rapports et Convocations' }
+          ]
+        }
       },
       {
         path: 'starter',
