@@ -7,6 +7,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { ReportService } from '../../services/report.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { throwError } from 'rxjs';
+import {  Validators, FormControl, FormGroupDirective, NgForm } from '@angular/forms';
+import { ErrorStateMatcher } from '@angular/material/core';
 
 export enum Semestre {
   S1 = 'S1',
@@ -31,6 +33,8 @@ export class ReportGenerationComponent implements OnInit {
   loading = false;
   semestres = Object.values(Semestre);
   typeSessions = Object.values(TypeSession);
+  matcher = new InstantErrorStateMatcher();
+
 
   constructor(
     private fb: FormBuilder,
@@ -41,11 +45,21 @@ export class ReportGenerationComponent implements OnInit {
       anneeUniversitaire: [''],
       semestre: [''],
       typeSession: [''],
-      enseignantId: ['']
+      enseignantId: ['', [Validators.min(1)]] //  min validator
+
     });
   }
 
   ngOnInit(): void {}
+
+
+   getEnseignantIdErrorMessage(): string {
+    const control = this.filterForm.get('enseignantId');
+    if (control?.hasError('min')) {
+      return 'L\'ID enseignant doit être supérieur à 0';
+    }
+    return '';
+  }
 
   exportToExcel(): void {
     this.loading = true;
@@ -87,6 +101,12 @@ export class ReportGenerationComponent implements OnInit {
       this.showError('Veuillez saisir l\'ID de l\'enseignant');
       return;
     }
+
+    if (this.filterForm.get('enseignantId')?.invalid) {
+      this.showError(this.getEnseignantIdErrorMessage());
+      return;
+    }
+
 
     this.loading = true;
     this.reportService.generateConvocation(enseignantId, params)
@@ -168,5 +188,11 @@ export class ReportGenerationComponent implements OnInit {
       verticalPosition: 'top',
       panelClass: ['error-snackbar']
     });
+  }
+}
+
+export class InstantErrorStateMatcher implements ErrorStateMatcher {
+  isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
+    return !!(control && control.invalid && (control.dirty || control.touched));
   }
 }

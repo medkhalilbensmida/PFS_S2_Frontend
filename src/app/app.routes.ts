@@ -72,11 +72,7 @@ export const routes: Routes = [
         data: { 
           roles: ['ROLE_ADMIN'],
           title: 'Rapports et Convocations',
-          breadcrumb: true,
-          urls: [
-            { title: 'Dashboard', url: '/dashboard' },
-            { title: 'Rapports et Convocations' }
-          ]
+          
         }
       },
       {
