@@ -74,7 +74,7 @@
           </ng-container>
 
           <!-- Colonne: Actions -->
-          <ng-container matColumnDef="actions">
+          <ng-container matColumnDef="actions" *ngIf="isAdmin">
             <mat-header-cell *matHeaderCellDef class="action-column">Actions</mat-header-cell>
             <mat-cell *matCellDef="let s">
               <div class="action-buttons">
