@@ -1,12 +1,11 @@
-// send-email-dialog.component.ts
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SurveillanceService } from '../../../services/surveillance.service';
+import { EnseignantDTO, SurveillanceService } from '../../../services/surveillance.service';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from 'src/app/material.module';
-
+import { finalize } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -22,13 +21,15 @@ import { MaterialModule } from 'src/app/material.module';
 export class SendEmailDialogComponent implements OnInit {
   emailForm: FormGroup;
   loading = false;
-  professors: any[] = [];
-  selectedSurveillances: any[] = [];
+  professors: EnseignantDTO[] = [];
+   isLoading = false; 
   emailTemplates = [
     { value: 'confirmation', label: 'Confirmation de surveillance' },
     { value: 'rappel', label: 'Rappel avant examen' },
     { value: 'custom', label: 'Message personnalisé' }
   ];
+  loadError: string | null = null;
+
 
   constructor(
     private fb: FormBuilder,
@@ -41,27 +42,31 @@ export class SendEmailDialogComponent implements OnInit {
       template: ['confirmation', Validators.required],
       customMessage: [''],
       sendToAll: [false],
-      selectedProfessors: [[]],
-      selectedSurveillances: [[]]
+      selectedProfessors: [[]]
     });
   }
 
   ngOnInit(): void {
-    // this.loadProfessors();
-    this.loadSurveillances();
+    this.loadProfessors();
   }
 
-  // loadProfessors(): void {
-  //   this.surveillanceService.getEnseignantsForSession(this.data.sessionId)
-  //     .subscribe((professors:any) => {
-  //       this.professors = professors;
-  //     });
-  // }
-
-  loadSurveillances(): void {
-    this.surveillanceService.getSurveillancesBySessionId(this.data.sessionId)
-      .subscribe(surveillances => {
-        this.selectedSurveillances = surveillances;
+  loadProfessors(): void {
+    this.isLoading = true;
+    this.loadError = null;
+    
+    this.surveillanceService.getEnseignantsForSession(this.data.sessionId)
+      .pipe(
+        finalize(() => this.isLoading = false)
+      )
+      .subscribe({
+        next: (professors) => {
+          this.professors = professors;
+        },
+        error: (err) => {
+          console.error('Failed to load professors', err);
+          this.loadError = 'Failed to load professors';
+          this.snackBar.open(this.loadError, 'Close', { duration: 5000 });
+        }
       });
   }
 
@@ -70,17 +75,6 @@ export class SendEmailDialogComponent implements OnInit {
       value: p.id,
       label: `${p.nom} ${p.prenom} (${p.email})`
     }));
-  }
-
-  get surveillanceOptions() {
-    return this.selectedSurveillances.map(s => ({
-      value: s.id,
-      label: `${this.formatDate(s.dateDebut)} - ${s.matiereName || 'Matière non spécifiée'} (${s.salleName || 'Salle non spécifiée'})`
-    }));
-  }
-
-  formatDate(date: string): string {
-    return new Date(date).toLocaleString();
   }
 
   onSubmit(): void {
@@ -97,8 +91,7 @@ export class SendEmailDialogComponent implements OnInit {
       customMessage: formData.customMessage,
       professorIds: formData.sendToAll 
         ? this.professors.map(p => p.id) 
-        : formData.selectedProfessors,
-      surveillanceIds: formData.selectedSurveillances
+        : formData.selectedProfessors
     };
 
     this.surveillanceService.sendEmails(payload)

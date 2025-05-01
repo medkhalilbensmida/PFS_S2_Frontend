@@ -7,7 +7,24 @@ import { HttpParams, HttpHeaders } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { AuthService } from '../pages/authentication/services/auth.service';
 
+export interface EmailPayload {
+  sessionId: number;
+  template: string;
+  customMessage?: string;
+  professorIds: number[];
+  }
 
+
+export interface SessionExamenDetailsDTO {
+  id: number;
+  dateDebut: string; // or use Date if you'll parse it
+  dateFin: string;   // or use Date if you'll parse it
+  type: string;
+  estActive: boolean;
+  anneeUniversitaireId: number;
+  numSemestre: string;
+  surveillances: Surveillance[];
+}
 export interface Surveillance {
   id: number;
   dateDebut: Date;
@@ -20,6 +37,15 @@ export interface Surveillance {
   sessionExamenId?: number;
   salleName?: string;
   matiereName?: string;
+}
+export interface EnseignantDTO {
+  id: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone: string;
+  grade?: string;
+  departement?: string;
 }
 
 export interface Enseignant {
@@ -90,9 +116,10 @@ export class SurveillanceService {
    * Récupère les surveillances pour une session spécifique
    */
   getSurveillancesBySessionId(sessionId: number): Observable<Surveillance[]> {
-    return this.http.get<Surveillance[]>(`${this.apiUrl}/surveillances/session/${sessionId}`);
-  }
-
+    return this.http.get<SessionExamenDetailsDTO>(`${this.apiUrl}/sessions/detailed/${sessionId}`).pipe(
+        map(response => response.surveillances) // assuming 'surveillances' is the property name
+    );
+}
   /**
    * Récupère une surveillance spécifique par son ID
    */
@@ -130,6 +157,10 @@ export class SurveillanceService {
    */
   deleteSurveillance(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/surveillances/${id}`);
+  }
+
+  getEnseignantsForSession(sessionId: number): Observable<EnseignantDTO[]> {
+    return this.http.get<EnseignantDTO[]>(`${this.apiUrl}/sessions/${sessionId}/enseignants`);
   }
 
   /**
@@ -228,11 +259,6 @@ markDisponibilite(surveillanceId: number): Observable<DisponibiliteEnseignantDTO
   );
 }
 
-// getEnseignantsForSession(sessionId:number) : {
-//   const url = `${this.apiUrl}/surveillances/`
-
-// }
-
 cancelDisponibilite(surveillanceId: number): Observable<DisponibiliteEnseignantDTO> {
   console.log(`Sending PUT request to cancel disponibilite for surveillance ${surveillanceId}`);
   
@@ -281,14 +307,12 @@ checkDisponibilite(surveillanceId: number): Observable<boolean> {
     })
   );
 }
-  
-sendEmails(payload: any): Observable<any> {
-  const url = `${this.apiUrl}/surveillances/send-emails`;
-  return this.http.post<any>(url, payload, {
-    headers: new HttpHeaders({
-      'Content-Type': 'application/json'
-    })
-  });
+
+sendEmails(payload: EmailPayload): Observable<any> {
+  return this.http.post(`${this.apiUrl}/surveillances/send-emails`, payload);
 }
+  
+
+
 
 }
