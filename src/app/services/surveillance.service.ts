@@ -228,10 +228,10 @@ markDisponibilite(surveillanceId: number): Observable<DisponibiliteEnseignantDTO
   );
 }
 
-getEnseignantsForSession(sessionId:number) : {
-  const url = `${this.apiUrl}/surveillances/`
+// getEnseignantsForSession(sessionId:number) : {
+//   const url = `${this.apiUrl}/surveillances/`
 
-}
+// }
 
 cancelDisponibilite(surveillanceId: number): Observable<DisponibiliteEnseignantDTO> {
   console.log(`Sending PUT request to cancel disponibilite for surveillance ${surveillanceId}`);
@@ -282,6 +282,13 @@ checkDisponibilite(surveillanceId: number): Observable<boolean> {
   );
 }
   
- 
+sendEmails(payload: any): Observable<any> {
+  const url = `${this.apiUrl}/surveillances/send-emails`;
+  return this.http.post<any>(url, payload, {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json'
+    })
+  });
+}
 
 }

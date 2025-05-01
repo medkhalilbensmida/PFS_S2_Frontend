@@ -47,16 +47,16 @@ export class SendEmailDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadProfessors();
+    // this.loadProfessors();
     this.loadSurveillances();
   }
 
-  loadProfessors(): void {
-    this.surveillanceService.getEnseignantsForSession(this.data.sessionId)
-      .subscribe((professors:any) => {
-        this.professors = professors;
-      });
-  }
+  // loadProfessors(): void {
+  //   this.surveillanceService.getEnseignantsForSession(this.data.sessionId)
+  //     .subscribe((professors:any) => {
+  //       this.professors = professors;
+  //     });
+  // }
 
   loadSurveillances(): void {
     this.surveillanceService.getSurveillancesBySessionId(this.data.sessionId)
