@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SurveillanceService, Surveillance } from '../../../services/surveillance.service';
 import { MaterialModule } from '../../../material.module';
 import { CommonModule } from '@angular/common';
-import { catchError, throwError } from 'rxjs';
+import { catchError, forkJoin, throwError } from 'rxjs';
 
 interface DialogData {
   sessionId: number;
@@ -60,8 +60,8 @@ function formatISOUTC(date: Date | string | null): string | null {
 export class AddSurveillanceDialogComponent implements OnInit {
   surveillanceForm: FormGroup;
   loading = false;
-  salles: any[] = []; // This would normally be loaded from a service
-  matieres: any[] = []; // This would normally be loaded from a service
+  salles: any[] = [];
+  matieres: any[] = [];
   statutOptions: string[] = ['PLANIFIEE', 'EN_COURS', 'TERMINEE', 'ANNULEE'];
 
   constructor(
@@ -81,26 +81,33 @@ export class AddSurveillanceDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Load salles and matières (this would be from an actual service)
-    // For now we'll use placeholder data
-    this.salles = [
-      { id: 1, nom: 'Salle A1' },
-      { id: 2, nom: 'Salle A2' },
-      { id: 3, nom: 'Salle B1' }
-    ];
-    
-    this.matieres = [
-      { id: 1, nom: 'Mathématiques' },
-      { id: 2, nom: 'Physique' },
-      { id: 3, nom: 'Informatique' }
-    ];
+    this.loadDropdownData();
+  }
+
+  loadDropdownData(): void {
+    this.loading = true;
+    forkJoin({
+      salles: this.surveillanceService.getAllSalles(),
+      matieres: this.surveillanceService.getAllMatieres()
+    }).pipe(
+      catchError(error => {
+        console.error('Error loading dropdown data:', error);
+        this.showError('Erreur lors du chargement des données pour les menus déroulants.');
+        this.loading = false;
+        return throwError(() => new Error('Failed to load dropdown data'));
+      })
+    ).subscribe(({ salles, matieres }) => {
+      this.salles = salles;
+      this.matieres = matieres;
+      this.loading = false;
+    });
   }
   
   getSalleName(): string | undefined {
     const salleId = this.surveillanceForm.get('salleId')?.value;
     if (!salleId) return undefined;
     const salle = this.salles.find(s => s.id === salleId);
-    return salle ? salle.nom : undefined;
+    return salle ? salle.numero : undefined;
   }
   
   getMatiereName(): string | undefined {
@@ -177,7 +184,6 @@ export class AddSurveillanceDialogComponent implements OnInit {
       .subscribe(() => {
         this.dialogRef.close(true);
         this.showSuccess('Surveillance créée avec succès');
-        this.loading = false;
       });
   }
 

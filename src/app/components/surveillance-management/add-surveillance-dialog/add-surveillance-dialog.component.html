@@ -43,7 +43,7 @@
           <mat-select formControlName="salleId">
             <mat-option [value]="null">Non spécifiée</mat-option>
             <mat-option *ngFor="let salle of salles" [value]="salle.id">
-              {{ salle.nom }}
+              {{ salle.numero }}
             </mat-option>
           </mat-select>
         </mat-form-field>
