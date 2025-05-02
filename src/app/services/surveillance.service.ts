@@ -61,13 +61,21 @@ export interface Salle {
   id: number;
   numero: string;
   capacite?: number;
-  nom?: string;
+  batiment?: string;
+  etage?: string;
+}
+
+export interface Section {
+  name: string;
+  studentNumber?: number;
 }
 
 export interface Matiere {
   id: number;
-  nom: string;
+  niveau?: string;
+  section?: Section;
   code?: string;
+  nom: string;
 }
 
 @Injectable({

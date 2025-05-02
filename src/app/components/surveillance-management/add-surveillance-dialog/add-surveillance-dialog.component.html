@@ -37,8 +37,8 @@
         </mat-form-field>
       </div>
 
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="full-width">
+      <div class="form-row info-row">
+        <mat-form-field appearance="outline" class="select-field">
           <mat-label>Salle</mat-label>
           <mat-select formControlName="salleId">
             <mat-option [value]="null">Non spécifiée</mat-option>
@@ -47,18 +47,33 @@
             </mat-option>
           </mat-select>
         </mat-form-field>
+        <span class="info-text" *ngIf="selectedSalleCapacity !== null">
+          Capacité: {{ selectedSalleCapacity }}
+        </span>
       </div>
 
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="full-width">
+      <div class="form-row info-row">
+        <mat-form-field appearance="outline" class="select-field">
           <mat-label>Matière</mat-label>
           <mat-select formControlName="matiereId">
             <mat-option [value]="null">Non spécifiée</mat-option>
-            <mat-option *ngFor="let matiere of matieres" [value]="matiere.id">
-              {{ matiere.nom }}
-            </mat-option>
+            <mat-optgroup *ngFor="let group of matiereGroups" [label]="group.sectionName">
+              <mat-option *ngFor="let matiere of group.matieres" [value]="matiere.id">
+                 {{ matiere.nom }} ({{ matiere.code }})
+              </mat-option>
+            </mat-optgroup>
           </mat-select>
         </mat-form-field>
+        <span class="info-text" *ngIf="selectedMatiereStudentNumber !== null">
+          Effectif Section: {{ selectedMatiereStudentNumber }}
+        </span>
+      </div>
+
+      <div *ngIf="showCapacityWarning" class="capacity-warning">
+        <mat-icon color="warn">warning</mat-icon>
+        <span>
+          Attention : L'effectif de la section ({{ selectedMatiereStudentNumber }}) dépasse la capacité de la salle ({{ selectedSalleCapacity }}).
+        </span>
       </div>
     </div>
   </mat-dialog-content>
