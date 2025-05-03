@@ -1,7 +1,8 @@
 <div class="container">
   <mat-card>
     <mat-card-header>
-      <mat-card-title>Gestion des Surveillances</mat-card-title>
+      <mat-card-title *ngIf="isAdmin">Gestion des Surveillances</mat-card-title>
+      <mat-card-title *ngIf="!isAdmin">Liste  des Surveillances</mat-card-title>
       <mat-card-subtitle>Session d'examen #{{ sessionId }}</mat-card-subtitle>
     </mat-card-header>
 
@@ -11,11 +12,12 @@
         <mat-spinner diameter="40"></mat-spinner>
       </div>
 
-      <div class="actions-container" *ngIf="!loading">
+      <div class="actions-container" *ngIf="!loading && isAdmin">
         <button mat-raised-button color="primary" (click)="openAddSurveillanceDialog()">
           <mat-icon>add</mat-icon> Nouvelle Surveillance
         </button>
       </div>
+
 
       <div *ngIf="!loading && surveillances.length > 0" class="table-wrapper">
         <mat-table [dataSource]="surveillances" class="mat-elevation-z4 responsive-table">

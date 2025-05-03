@@ -60,26 +60,26 @@ export const navItems: NavItem[] = [
     iconName: 'solar:book-bookmark-line-duotone',
     route: 'apps/Sessions',
   },
-  {
-    displayName: 'Chat',
-    iconName: 'solar:chat-round-line-line-duotone',
-    route: 'apps/chat',
-  },
-  {
-    displayName: 'Calendar',
-    iconName: 'solar:calendar-mark-line-duotone',
-    route: 'apps/calendar',
-  },
-  {
-    displayName: 'Email',
-    iconName: 'solar:letter-line-duotone',
-    route: 'apps/email/inbox',
-  },
-  {
-    displayName: 'Contacts',
-    iconName: 'solar:phone-line-duotone',
-    route: 'apps/contacts',
-  },
+  // {
+  //   displayName: 'Chat',
+  //   iconName: 'solar:chat-round-line-line-duotone',
+  //   route: 'apps/chat',
+  // },
+  // {
+  //   displayName: 'Calendar',
+  //   iconName: 'solar:calendar-mark-line-duotone',
+  //   route: 'apps/calendar',
+  // },
+  // {
+  //   displayName: 'Email',
+  //   iconName: 'solar:letter-line-duotone',
+  //   route: 'apps/email/inbox',
+  // },
+  // {
+  //   displayName: 'Contacts',
+  //   iconName: 'solar:phone-line-duotone',
+  //   route: 'apps/contacts',
+  // },
   // {
   //   displayName: 'Sessions',
   //   iconName: 'solar:book-bookmark-line-duotone',

@@ -15,7 +15,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: '/dashboards/dashboard1', // Redirige vers le dashboard par défaut
+        redirectTo: '/apps/Sessions', // Redirige vers Sessions par défaut
         pathMatch: 'full',
       },
       {
