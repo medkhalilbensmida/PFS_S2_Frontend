@@ -43,7 +43,7 @@
           <mat-select formControlName="salleId">
             <mat-option [value]="null">Non spécifiée</mat-option>
             <mat-option *ngFor="let salle of salles" [value]="salle.id">
-              {{ salle.numero }}
+              {{ salle.numero }}  : {{ salle.capacite }} places
             </mat-option>
           </mat-select>
         </mat-form-field>
@@ -54,25 +54,35 @@
 
       <div class="form-row info-row">
         <mat-form-field appearance="outline" class="select-field">
-          <mat-label>Matière</mat-label>
-          <mat-select formControlName="matiereId">
-            <mat-option [value]="null">Non spécifiée</mat-option>
-            <mat-optgroup *ngFor="let group of matiereGroups" [label]="group.sectionName">
-              <mat-option *ngFor="let matiere of group.matieres" [value]="matiere.id">
-                 {{ matiere.nom }} ({{ matiere.code }})
-              </mat-option>
-            </mat-optgroup>
+          <mat-label>Section</mat-label>
+          <mat-select formControlName="sectionName" (selectionChange)="onSectionChange()">
+            <mat-option [value]="null">Sélectionnez une section</mat-option>
+            <mat-option *ngFor="let section of availableSections" [value]="section.name">
+              {{ section.name }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
-        <span class="info-text" *ngIf="selectedMatiereStudentNumber !== null">
-          Effectif Section: {{ selectedMatiereStudentNumber }}
+        <span class="info-text" *ngIf="selectedSectionStudentNumber !== null">
+          Effectif Section: {{ selectedSectionStudentNumber }}
         </span>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Matière</mat-label>
+          <mat-select formControlName="matiereId" [disabled]="!surveillanceForm.get('sectionName')?.value">
+            <mat-option [value]="null">Sélectionnez une matière</mat-option>
+            <mat-option *ngFor="let matiere of filteredMatieres" [value]="matiere.id">
+              {{ matiere.nom }} ({{ matiere.code }})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
       </div>
 
       <div *ngIf="showCapacityWarning" class="capacity-warning">
         <mat-icon color="warn">warning</mat-icon>
         <span>
-          Attention : L'effectif de la section ({{ selectedMatiereStudentNumber }}) dépasse la capacité de la salle ({{ selectedSalleCapacity }}).
+          Attention : L'effectif de la section ({{ selectedSectionStudentNumber }}) dépasse la capacité de la salle ({{ selectedSalleCapacity }}).
         </span>
       </div>
     </div>
@@ -85,4 +95,4 @@
       <span *ngIf="!loading">Ajouter</span>
     </button>
   </mat-dialog-actions>
-</form> 
+</form>

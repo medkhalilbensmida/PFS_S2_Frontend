@@ -2,43 +2,26 @@ import { Component, Inject, OnInit, ChangeDetectionStrategy, ChangeDetectorRef }
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SurveillanceService, Surveillance, Salle, Matiere } from '../../../services/surveillance.service';
+import { SurveillanceService, Surveillance, Salle, Matiere, Section } from '../../../services/surveillance.service';
 import { MaterialModule } from '../../../material.module';
 import { CommonModule } from '@angular/common';
 import { catchError, forkJoin, map, throwError } from 'rxjs';
-
-// Remove explicit DTO imports if types come from service
-// import { SalleDTO } from '../../../models/salle.dto';
-// import { MatiereDTO } from '../../../models/matiere.dto';
-// import { SectionDTO } from '../../../models/section.dto';
 
 interface DialogData {
   sessionId: number;
 }
 
-// Interface for grouped matieres for the template
-// Use the Matiere type defined in surveillance.service.ts
-interface MatiereGroup {
-  sectionName: string;
-  matieres: Matiere[]; // Use Matiere type from service
-}
-
-// Interface for the payload sent to the API
-// Reflects string dates and required statut
 interface CreateSurveillancePayload {
   dateDebut: string;
   dateFin: string;
   statut: string;
   salleId?: number | null;
-  // Assuming Matiere type from service has an 'id' property
   matiereId?: number | null;
   sessionExamenId: number;
-  // Include other optional fields from Surveillance if they can be sent on creation
   enseignantPrincipalId?: number | null;
   enseignantSecondaireId?: number | null;
 }
 
-// Helper function to format Date object or string to YYYY-MM-DDTHH:mm:ssZ (UTC ISO 8601 format)
 function formatISOUTC(date: Date | string | null): string | null {
   if (!date) return null;
   try {
@@ -48,7 +31,6 @@ function formatISOUTC(date: Date | string | null): string | null {
       return null;
     }
     return dateObj.toISOString();
-
   } catch (e) {
     console.error("Error formatting date to UTC ISO:", date, e);
     return null;
@@ -71,14 +53,14 @@ function formatISOUTC(date: Date | string | null): string | null {
 export class AddSurveillanceDialogComponent implements OnInit {
   surveillanceForm: FormGroup;
   loading = false;
-  salles: Salle[] = []; // Use Salle type from service
-  // Updated matieres property to hold grouped data
-  matiereGroups: MatiereGroup[] = [];
+  salles: Salle[] = [];
+  matieres: Matiere[] = [];
+  filteredMatieres: Matiere[] = [];
+  availableSections: Section[] = [];
   statutOptions: string[] = ['PLANIFIEE', 'EN_COURS', 'TERMINEE', 'ANNULEE'];
 
-  // Properties to display additional info
   selectedSalleCapacity: number | null = null;
-  selectedMatiereStudentNumber: number | null = null;
+  selectedSectionStudentNumber: number | null = null;
   showCapacityWarning = false;
 
   constructor(
@@ -87,13 +69,14 @@ export class AddSurveillanceDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private surveillanceService: SurveillanceService,
     private snackBar: MatSnackBar,
-    private cdRef: ChangeDetectorRef // Inject ChangeDetectorRef
+    private cdRef: ChangeDetectorRef
   ) {
     this.surveillanceForm = this.fb.group({
       dateDebut: ['', Validators.required],
       dateFin: ['', Validators.required],
       statut: ['PLANIFIEE', Validators.required],
       salleId: [''],
+      sectionName: [''],
       matiereId: ['']
     });
   }
@@ -107,54 +90,57 @@ export class AddSurveillanceDialogComponent implements OnInit {
     this.loading = true;
     forkJoin({
       salles: this.surveillanceService.getAllSalles(),
-      // Assuming getAllMatieres returns Matiere[] (from service type)
       matieres: this.surveillanceService.getAllMatieres()
     }).pipe(
-      map(({ salles, matieres }) => {
-        // Group matieres by section name
-        // Use Matiere type from service
-        const groups: { [key: string]: Matiere[] } = {};
-        const ungroupedSectionName = 'Non classé'; // Name for matieres without section
-
-        matieres.forEach(matiere => {
-          // Access section assuming it exists on the Matiere type from service
-          const sectionName = matiere.section ? matiere.section.name : ungroupedSectionName;
-          if (!groups[sectionName]) {
-            groups[sectionName] = [];
-          }
-          groups[sectionName].push(matiere);
-        });
-
-        // Convert grouped object into array for template, sorting if desired
-        const matiereGroups = Object.keys(groups)
-                                    .sort((a, b) => a === ungroupedSectionName ? 1 : b === ungroupedSectionName ? -1 : a.localeCompare(b)) // Put ungrouped last
-                                    .map(sectionName => ({ sectionName, matieres: groups[sectionName] }));
-
-        return { salles, matiereGroups };
-      }),
       catchError(error => {
         console.error('Error loading dropdown data:', error);
         this.showError('Erreur lors du chargement des données pour les menus déroulants.');
         this.loading = false;
-        this.cdRef.markForCheck(); // Trigger change detection on error
+        this.cdRef.markForCheck();
         return throwError(() => new Error('Failed to load dropdown data'));
       })
-    ).subscribe(({ salles, matiereGroups }) => {
+    ).subscribe(({ salles, matieres }) => {
       this.salles = salles;
-      this.matiereGroups = matiereGroups;
+      this.matieres = matieres;
+      
+      // Extraire les sections uniques à partir des matières
+      const sectionsMap = new Map<string, Section>();
+      matieres.forEach(matiere => {
+        if (matiere.section) {
+          sectionsMap.set(matiere.section.name, matiere.section);
+        }
+      });
+      this.availableSections = Array.from(sectionsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+      
       this.loading = false;
-      this.cdRef.markForCheck(); // Trigger change detection after loading
+      this.cdRef.markForCheck();
     });
+  }
+
+  onSectionChange(): void {
+    const selectedSectionName = this.surveillanceForm.get('sectionName')?.value;
+    if (selectedSectionName) {
+      this.filteredMatieres = this.matieres.filter(matiere => 
+        matiere.section?.name === selectedSectionName
+      );
+      
+      // Trouver le nombre d'étudiants pour la section sélectionnée
+      const selectedSection = this.availableSections.find(s => s.name === selectedSectionName);
+      this.selectedSectionStudentNumber = selectedSection?.studentNumber || null;
+      
+      // Réinitialiser la sélection de la matière
+      this.surveillanceForm.get('matiereId')?.setValue(null);
+    } else {
+      this.filteredMatieres = [];
+      this.selectedSectionStudentNumber = null;
+    }
+    this.checkCapacity();
+    this.cdRef.markForCheck();
   }
 
   subscribeToSelectionChanges(): void {
     this.surveillanceForm.get('salleId')?.valueChanges.subscribe(salleId => {
       this.updateSalleCapacity(salleId);
-      this.checkCapacity();
-    });
-
-    this.surveillanceForm.get('matiereId')?.valueChanges.subscribe(matiereId => {
-      this.updateMatiereStudentNumber(matiereId);
       this.checkCapacity();
     });
   }
@@ -164,53 +150,31 @@ export class AddSurveillanceDialogComponent implements OnInit {
       this.selectedSalleCapacity = null;
       return;
     }
-    // Use Salle type from service (assuming it has capacite)
     const selectedSalle = this.salles.find(s => s.id === Number(salleId));
     this.selectedSalleCapacity = selectedSalle?.capacite ?? null;
   }
 
-  updateMatiereStudentNumber(matiereId: number | string | null): void {
-     if (!matiereId) {
-        this.selectedMatiereStudentNumber = null;
-        return;
-     }
-     // Need to search through the groups
-     // Use Matiere type from service
-     let selectedMatiere: Matiere | undefined;
-     for (const group of this.matiereGroups) {
-        selectedMatiere = group.matieres.find(m => m.id === Number(matiereId));
-        if (selectedMatiere) break;
-     }
-     // Access studentNumber assuming it exists on section property of Matiere type
-     this.selectedMatiereStudentNumber = selectedMatiere?.section?.studentNumber ?? null;
-  }
-
   checkCapacity(): void {
-    if (this.selectedSalleCapacity !== null && this.selectedMatiereStudentNumber !== null) {
-      this.showCapacityWarning = this.selectedMatiereStudentNumber > this.selectedSalleCapacity;
+    if (this.selectedSalleCapacity !== null && this.selectedSectionStudentNumber !== null) {
+      this.showCapacityWarning = this.selectedSectionStudentNumber > this.selectedSalleCapacity;
     } else {
-      // Hide warning if either salle or matiere (or its section) is not selected
       this.showCapacityWarning = false;
     }
-    this.cdRef.markForCheck(); // Trigger change detection
+    this.cdRef.markForCheck();
   }
 
   getSalleName(): string | undefined {
-      const salleId = this.surveillanceForm.get('salleId')?.value;
-      if (!salleId) return undefined;
-      const salle = this.salles.find(s => s.id === Number(salleId));
-      return salle?.numero; // Use optional chaining, assuming 'numero' exists
+    const salleId = this.surveillanceForm.get('salleId')?.value;
+    if (!salleId) return undefined;
+    const salle = this.salles.find(s => s.id === Number(salleId));
+    return salle?.numero;
   }
 
   getMatiereName(): string | undefined {
-      const matiereId = this.surveillanceForm.get('matiereId')?.value;
-      if (!matiereId) return undefined;
-      let selectedMatiere: Matiere | undefined;
-      for (const group of this.matiereGroups) {
-          selectedMatiere = group.matieres.find(m => m.id === Number(matiereId));
-          if (selectedMatiere) break;
-      }
-      return selectedMatiere?.nom; // Use optional chaining, assuming 'nom' exists
+    const matiereId = this.surveillanceForm.get('matiereId')?.value;
+    if (!matiereId) return undefined;
+    const selectedMatiere = this.matieres.find(m => m.id === Number(matiereId));
+    return selectedMatiere?.nom;
   }
 
   onSubmit(): void {
@@ -226,9 +190,9 @@ export class AddSurveillanceDialogComponent implements OnInit {
     const formattedDateFin = formatISOUTC(formValue.dateFin);
 
     if (!formattedDateDebut || !formattedDateFin) {
-        this.showError('Format de date invalide.');
-        this.loading = false;
-        return;
+      this.showError('Format de date invalide.');
+      this.loading = false;
+      return;
     }
 
     const surveillance: CreateSurveillancePayload = {
@@ -290,4 +254,4 @@ export class AddSurveillanceDialogComponent implements OnInit {
       panelClass: ['error-snackbar']
     });
   }
-} 
+}
