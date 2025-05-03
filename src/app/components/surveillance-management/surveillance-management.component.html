@@ -12,11 +12,18 @@
         <mat-spinner diameter="40"></mat-spinner>
       </div>
 
-      <div class="actions-container" *ngIf="!loading && isAdmin">
+      <div class="actions-container" *ngIf="!loading && isAdmin" style="display: flex; gap: 10px;">
         <button mat-raised-button color="primary" (click)="openAddSurveillanceDialog()">
           <mat-icon>add</mat-icon> Nouvelle Surveillance
         </button>
+
+        <button mat-raised-button color="accent" (click)="openSendEmailDialog()">
+          <mat-icon>email</mat-icon> Email
+        </button>
       </div>
+
+
+
 
 
       <div *ngIf="!loading && surveillances.length > 0" class="table-wrapper">

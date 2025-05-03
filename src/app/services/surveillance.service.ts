@@ -1,13 +1,59 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { API_CONFIG } from '../pages/authentication/api.config';
 import { HttpParams, HttpHeaders } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { AuthService } from '../pages/authentication/services/auth.service';
+import { LongDateFormatKey } from 'moment';
+
+// Add these interfaces
+export interface NotificationEmailDTO {
+  toEmail: string;
+  subject: string;
+  message: string;
+  date: Date;
+  template: string;
+  session:number;
+}
+
+export interface MailRequest {
+  toEmail: string;
+  subject: string;
+  template: string;
+  isHtml: boolean;
+  context: { [key: string]: any };
+  attachments?: Attachment[];
+}
+
+export interface Attachment {
+  fileName: string;
+  fileData: Blob;
+}
+
+export interface Notification {
+  id?: number;
+  message: string;
+  dateEnvoi?: Date;
+  estLue?: boolean;
+  type: string;
+  destinataireId: number;
+  surveillanceId?: number;
+  emailEnvoye?: boolean;
+}
 
 
+export interface SessionExamenDetailsDTO {
+  id: number;
+  dateDebut: string; // or use Date if you'll parse it
+  dateFin: string;   // or use Date if you'll parse it
+  type: string;
+  estActive: boolean;
+  anneeUniversitaireId: number;
+  numSemestre: string;
+  surveillances: Surveillance[];
+}
 export interface Surveillance {
   id: number;
   dateDebut: Date;
@@ -20,6 +66,15 @@ export interface Surveillance {
   sessionExamenId?: number;
   salleName?: string;
   matiereName?: string;
+}
+export interface EnseignantDTO {
+  id: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone: string;
+  grade?: string;
+  departement?: string;
 }
 
 export interface Enseignant {
@@ -98,9 +153,10 @@ export class SurveillanceService {
    * Récupère les surveillances pour une session spécifique
    */
   getSurveillancesBySessionId(sessionId: number): Observable<Surveillance[]> {
-    return this.http.get<Surveillance[]>(`${this.apiUrl}/surveillances/session/${sessionId}`);
-  }
-
+    return this.http.get<SessionExamenDetailsDTO>(`${this.apiUrl}/sessions/detailed/${sessionId}`).pipe(
+        map(response => response.surveillances) // assuming 'surveillances' is the property name
+    );
+}
   /**
    * Récupère une surveillance spécifique par son ID
    */
@@ -138,6 +194,10 @@ export class SurveillanceService {
    */
   deleteSurveillance(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/surveillances/${id}`);
+  }
+
+  getEnseignantsForSession(sessionId: number): Observable<EnseignantDTO[]> {
+    return this.http.get<EnseignantDTO[]>(`${this.apiUrl}/sessions/${sessionId}/enseignants`);
   }
 
   /**
@@ -284,7 +344,47 @@ checkDisponibilite(surveillanceId: number): Observable<boolean> {
     })
   );
 }
+
   
- 
+sendEmailToAll(): Observable<void> {
+  return this.http.post<void>(`${this.apiUrl}/emails/send-all`, {});
+}
+
+sendEmailList(notifications: Notification[]): Observable<void> {
+  return this.http.post<void>(`${this.apiUrl}/emails/send-list`, notifications);
+}
+
+sendSingleEmail(notification: Notification): Observable<void> {
+  return this.http.post<void>(`${this.apiUrl}/emails/send-notif`, notification);
+}
+
+sendEmailDTO(dto: NotificationEmailDTO): Observable<string> {
+  return this.http.post(`${this.apiUrl}/emails/send-dto`, dto, {
+    responseType: 'text'  // Explicitly tell Angular to expect text response
+  }).pipe(
+    catchError(error => {
+      // Handle HTTP errors
+      console.error('Error sending email:', error);
+      return throwError(() => new Error('Failed to send email'));
+    })
+  );
+}
+
+// sendTemplatedEmail(dto: NotificationEmailDTO): Observable<void> {
+//   const mailRequest: MailRequest = {
+//     toEmail: dto.toEmail,
+//     subject: dto.subject,
+//     template: dto.template,
+//     isHtml: true,
+//     context: {
+//       professorName: `${dto.prenom} ${dto.nom}`,
+//       message: dto.message,
+//       date: new Date().toLocaleDateString()
+//     }
+//   };
+  
+//   return this.http.post<void>(`${this.apiUrl}/emails/send-templated`, mailRequest);
+// }
+
 
 }
