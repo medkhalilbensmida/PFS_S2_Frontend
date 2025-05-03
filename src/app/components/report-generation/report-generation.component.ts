@@ -9,6 +9,11 @@ import { catchError, finalize } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import {  Validators, FormControl, FormGroupDirective, NgForm } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
+import { SurveillanceService, Enseignant } from '../../services/surveillance.service';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+
+
+
 
 export enum Semestre {
   S1 = 'S1',
@@ -24,8 +29,12 @@ export enum TypeSession {
 @Component({
   selector: 'app-report-generation',
   standalone: true,
-  imports: [MaterialModule, CommonModule, ReactiveFormsModule],
-  templateUrl: './report-generation.component.html',
+  imports: [
+    MaterialModule, 
+    CommonModule, 
+    ReactiveFormsModule,
+    MatAutocompleteModule
+  ],  templateUrl: './report-generation.component.html',
   styleUrls: ['./report-generation.component.scss']
 })
 export class ReportGenerationComponent implements OnInit {
@@ -34,32 +43,62 @@ export class ReportGenerationComponent implements OnInit {
   semestres = Object.values(Semestre);
   typeSessions = Object.values(TypeSession);
   matcher = new InstantErrorStateMatcher();
+  enseignants: Enseignant[] = [];
+  filteredEnseignants: Enseignant[] = [];
+  searchTerm: string = '';
 
 
   constructor(
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
-    private reportService: ReportService
+    private reportService: ReportService,
+    private surveillanceService: SurveillanceService
   ) {
     this.filterForm = this.fb.group({
       anneeUniversitaire: [''],
       semestre: [''],
       typeSession: [''],
-      enseignantId: ['', [Validators.min(1)]] //  min validator
-
+      enseignantId: [null],
+      searchEnseignant: ['']
     });
   }
 
-  ngOnInit(): void {}
-
-
-   getEnseignantIdErrorMessage(): string {
-    const control = this.filterForm.get('enseignantId');
-    if (control?.hasError('min')) {
-      return 'L\'ID enseignant doit être supérieur à 0';
-    }
-    return '';
+  ngOnInit(): void {
+    this.loadEnseignants();
+    
+    // Subscribe to search input changes
+    this.filterForm.get('searchEnseignant')?.valueChanges.subscribe(value => {
+      if (typeof value === 'string') {
+        this.filterEnseignants({ target: { value } });
+      }
+    });
   }
+
+  loadEnseignants(): void {
+    this.loading = true;
+    this.surveillanceService.getAllEnseignants()
+      .pipe(
+        catchError(error => {
+          this.showError('Impossible de charger la liste des enseignants');
+          return throwError(() => error);
+        }),
+        finalize(() => this.loading = false)
+      )
+      .subscribe(data => {
+        this.enseignants = data;
+        this.filteredEnseignants = data;
+      });
+  }
+
+  
+
+  getEnseignantIdErrorMessage(): string {
+  const control = this.filterForm.get('enseignantId');
+  if (control?.hasError('min')) {
+    return 'L\'ID enseignant doit être supérieur à 0';
+  }
+  return '';
+}
 
   exportToExcel(): void {
     this.loading = true;
@@ -94,21 +133,49 @@ export class ReportGenerationComponent implements OnInit {
         this.downloadFile(blob, 'surveillances.csv');
       });
   }
+  
+
+  
+
+  onEnseignantSelected(event: any): void {
+    const enseignant = event.option.value;
+    if (enseignant && enseignant.prenom && enseignant.nom) {
+      this.filterForm.patchValue({
+        enseignantId: enseignant.id,
+        searchEnseignant: `${enseignant.prenom} ${enseignant.nom}`
+      }, { emitEvent: false });
+    }
+  }
+
+  filterEnseignants(event: any): void {
+    const searchValue = typeof event === 'string' 
+      ? event.toLowerCase()
+      : event?.target?.value?.toLowerCase() || '';
+      
+    this.filteredEnseignants = this.enseignants.filter(enseignant =>
+      enseignant.prenom && enseignant.nom && 
+      `${enseignant.prenom} ${enseignant.nom}`.toLowerCase().includes(searchValue)
+    );
+  }
+
+  displayEnseignant = (enseignant: Enseignant | string | null): string => {
+    if (!enseignant) return '';
+    if (typeof enseignant === 'string') return enseignant;
+    return enseignant.prenom && enseignant.nom ? `${enseignant.prenom} ${enseignant.nom}` : '';
+  }
+
+
+  
 
   generateConvocation(): void {
+    if (this.filterForm.invalid) {
+      this.showError('Veuillez sélectionner un enseignant');
+      return;
+    }
+
     const { enseignantId, ...params } = this.filterForm.value;
-    if (!enseignantId) {
-      this.showError('Veuillez saisir l\'ID de l\'enseignant');
-      return;
-    }
-
-    if (this.filterForm.get('enseignantId')?.invalid) {
-      this.showError(this.getEnseignantIdErrorMessage());
-      return;
-    }
-
-
     this.loading = true;
+    
     this.reportService.generateConvocation(enseignantId, params)
       .pipe(
         catchError(error => {
@@ -121,6 +188,7 @@ export class ReportGenerationComponent implements OnInit {
         this.downloadFile(blob, 'convocation.pdf');
       });
   }
+
 
   generateAllConvocations(): void {
     this.loading = true;
