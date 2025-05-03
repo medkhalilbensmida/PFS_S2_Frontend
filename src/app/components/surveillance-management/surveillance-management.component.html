@@ -11,11 +11,18 @@
         <mat-spinner diameter="40"></mat-spinner>
       </div>
 
-      <div class="actions-container" *ngIf="!loading">
+      <div class="actions-container" *ngIf="!loading" style="display: flex; gap: 10px;">
         <button mat-raised-button color="primary" (click)="openAddSurveillanceDialog()">
           <mat-icon>add</mat-icon> Nouvelle Surveillance
         </button>
+
+        <button mat-raised-button color="accent" (click)="openSendEmailDialog()">
+          <mat-icon>email</mat-icon> Email
+        </button>
       </div>
+
+
+
 
       <div *ngIf="!loading && surveillances.length > 0" class="table-wrapper">
         <mat-table [dataSource]="surveillances" class="mat-elevation-z4 responsive-table">
@@ -74,7 +81,7 @@
           </ng-container>
 
           <!-- Colonne: Actions -->
-          <ng-container matColumnDef="actions">
+          <ng-container matColumnDef="actions" *ngIf="isAdmin">
             <mat-header-cell *matHeaderCellDef class="action-column">Actions</mat-header-cell>
             <mat-cell *matCellDef="let s">
               <div class="action-buttons">

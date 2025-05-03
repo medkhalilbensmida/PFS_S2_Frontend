@@ -1,18 +1,16 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SurveillanceService, Surveillance } from '../../../services/surveillance.service';
+import { SurveillanceService, Surveillance, Salle, Matiere, Section } from '../../../services/surveillance.service';
 import { MaterialModule } from '../../../material.module';
 import { CommonModule } from '@angular/common';
-import { catchError, throwError } from 'rxjs';
+import { catchError, forkJoin, map, throwError } from 'rxjs';
 
 interface DialogData {
   sessionId: number;
 }
 
-// Type for the payload sent to the API
-// Reflects string dates and required statut
 interface CreateSurveillancePayload {
   dateDebut: string;
   dateFin: string;
@@ -20,28 +18,22 @@ interface CreateSurveillancePayload {
   salleId?: number | null;
   matiereId?: number | null;
   sessionExamenId: number;
-  // Include other optional fields from Surveillance if they can be sent on creation
   enseignantPrincipalId?: number | null;
   enseignantSecondaireId?: number | null;
 }
 
-// Helper function to format Date object or string to YYYY-MM-DDTHH:mm:ssZ (UTC ISO 8601 format)
 function formatISOUTC(date: Date | string | null): string | null {
   if (!date) return null;
   try {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
     if (isNaN(dateObj.getTime())) {
       console.error("Invalid date value for formatting:", date);
-      return null; 
+      return null;
     }
-    // Use toISOString() directly which returns YYYY-MM-DDTHH:mm:ss.sssZ format
-    // The backend likely handles the milliseconds part, or we can truncate if needed.
-    // Let's keep the milliseconds for now as the example showed them.
-    return dateObj.toISOString(); 
-
+    return dateObj.toISOString();
   } catch (e) {
     console.error("Error formatting date to UTC ISO:", date, e);
-    return null; 
+    return null;
   }
 }
 
@@ -55,64 +47,138 @@ function formatISOUTC(date: Date | string | null): string | null {
     MaterialModule
   ],
   templateUrl: './add-surveillance-dialog.component.html',
-  styleUrls: ['./add-surveillance-dialog.component.scss']
+  styleUrls: ['./add-surveillance-dialog.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddSurveillanceDialogComponent implements OnInit {
   surveillanceForm: FormGroup;
   loading = false;
-  salles: any[] = []; // This would normally be loaded from a service
-  matieres: any[] = []; // This would normally be loaded from a service
+  salles: Salle[] = [];
+  matieres: Matiere[] = [];
+  filteredMatieres: Matiere[] = [];
+  availableSections: Section[] = [];
   statutOptions: string[] = ['PLANIFIEE', 'EN_COURS', 'TERMINEE', 'ANNULEE'];
+
+  selectedSalleCapacity: number | null = null;
+  selectedSectionStudentNumber: number | null = null;
+  showCapacityWarning = false;
 
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<AddSurveillanceDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private surveillanceService: SurveillanceService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdRef: ChangeDetectorRef
   ) {
     this.surveillanceForm = this.fb.group({
       dateDebut: ['', Validators.required],
       dateFin: ['', Validators.required],
       statut: ['PLANIFIEE', Validators.required],
       salleId: [''],
+      sectionName: [''],
       matiereId: ['']
     });
   }
 
   ngOnInit(): void {
-    // Load salles and matières (this would be from an actual service)
-    // For now we'll use placeholder data
-    this.salles = [
-      { id: 1, nom: 'Salle A1' },
-      { id: 2, nom: 'Salle A2' },
-      { id: 3, nom: 'Salle B1' }
-    ];
-    
-    this.matieres = [
-      { id: 1, nom: 'Mathématiques' },
-      { id: 2, nom: 'Physique' },
-      { id: 3, nom: 'Informatique' }
-    ];
+    this.loadDropdownData();
+    this.subscribeToSelectionChanges();
   }
-  
+
+  loadDropdownData(): void {
+    this.loading = true;
+    forkJoin({
+      salles: this.surveillanceService.getAllSalles(),
+      matieres: this.surveillanceService.getAllMatieres()
+    }).pipe(
+      catchError(error => {
+        console.error('Error loading dropdown data:', error);
+        this.showError('Erreur lors du chargement des données pour les menus déroulants.');
+        this.loading = false;
+        this.cdRef.markForCheck();
+        return throwError(() => new Error('Failed to load dropdown data'));
+      })
+    ).subscribe(({ salles, matieres }) => {
+      this.salles = salles;
+      this.matieres = matieres;
+      
+      // Extraire les sections uniques à partir des matières
+      const sectionsMap = new Map<string, Section>();
+      matieres.forEach(matiere => {
+        if (matiere.section) {
+          sectionsMap.set(matiere.section.name, matiere.section);
+        }
+      });
+      this.availableSections = Array.from(sectionsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+      
+      this.loading = false;
+      this.cdRef.markForCheck();
+    });
+  }
+
+  onSectionChange(): void {
+    const selectedSectionName = this.surveillanceForm.get('sectionName')?.value;
+    if (selectedSectionName) {
+      this.filteredMatieres = this.matieres.filter(matiere => 
+        matiere.section?.name === selectedSectionName
+      );
+      
+      // Trouver le nombre d'étudiants pour la section sélectionnée
+      const selectedSection = this.availableSections.find(s => s.name === selectedSectionName);
+      this.selectedSectionStudentNumber = selectedSection?.studentNumber || null;
+      
+      // Réinitialiser la sélection de la matière
+      this.surveillanceForm.get('matiereId')?.setValue(null);
+    } else {
+      this.filteredMatieres = [];
+      this.selectedSectionStudentNumber = null;
+    }
+    this.checkCapacity();
+    this.cdRef.markForCheck();
+  }
+
+  subscribeToSelectionChanges(): void {
+    this.surveillanceForm.get('salleId')?.valueChanges.subscribe(salleId => {
+      this.updateSalleCapacity(salleId);
+      this.checkCapacity();
+    });
+  }
+
+  updateSalleCapacity(salleId: number | string | null): void {
+    if (!salleId) {
+      this.selectedSalleCapacity = null;
+      return;
+    }
+    const selectedSalle = this.salles.find(s => s.id === Number(salleId));
+    this.selectedSalleCapacity = selectedSalle?.capacite ?? null;
+  }
+
+  checkCapacity(): void {
+    if (this.selectedSalleCapacity !== null && this.selectedSectionStudentNumber !== null) {
+      this.showCapacityWarning = this.selectedSectionStudentNumber > this.selectedSalleCapacity;
+    } else {
+      this.showCapacityWarning = false;
+    }
+    this.cdRef.markForCheck();
+  }
+
   getSalleName(): string | undefined {
     const salleId = this.surveillanceForm.get('salleId')?.value;
     if (!salleId) return undefined;
-    const salle = this.salles.find(s => s.id === salleId);
-    return salle ? salle.nom : undefined;
+    const salle = this.salles.find(s => s.id === Number(salleId));
+    return salle?.numero;
   }
-  
+
   getMatiereName(): string | undefined {
     const matiereId = this.surveillanceForm.get('matiereId')?.value;
     if (!matiereId) return undefined;
-    const matiere = this.matieres.find(m => m.id === matiereId);
-    return matiere ? matiere.nom : undefined;
+    const selectedMatiere = this.matieres.find(m => m.id === Number(matiereId));
+    return selectedMatiere?.nom;
   }
 
   onSubmit(): void {
     if (this.surveillanceForm.invalid) {
-      // Optionally mark fields as touched to show validation errors
       this.surveillanceForm.markAllAsTouched();
       return;
     }
@@ -120,47 +186,38 @@ export class AddSurveillanceDialogComponent implements OnInit {
     this.loading = true;
     const formValue = this.surveillanceForm.value;
 
-    // Format dates to UTC ISO format before sending
     const formattedDateDebut = formatISOUTC(formValue.dateDebut);
     const formattedDateFin = formatISOUTC(formValue.dateFin);
 
-    // Check if formatting failed (e.g., invalid date input)
     if (!formattedDateDebut || !formattedDateFin) {
-        this.showError('Format de date invalide.');
-        this.loading = false;
-        return;
+      this.showError('Format de date invalide.');
+      this.loading = false;
+      return;
     }
 
-    // Construct the payload with formatted dates and statut from form
     const surveillance: CreateSurveillancePayload = {
-      salleId: formValue.salleId || null, 
-      matiereId: formValue.matiereId || null, 
-      dateDebut: formattedDateDebut!, // Use non-null assertion as we checked above
-      dateFin: formattedDateFin!,     // Use non-null assertion as we checked above
+      salleId: formValue.salleId || null,
+      matiereId: formValue.matiereId || null,
+      dateDebut: formattedDateDebut!,
+      dateFin: formattedDateFin!,
       sessionExamenId: this.data.sessionId,
       statut: formValue.statut
     };
 
-    // Call the service
     this.surveillanceService.createSurveillance(surveillance)
       .pipe(
         catchError(error => {
-          // Log the detailed error from the backend
           console.error('Backend error:', error);
           let errorMsg = 'Erreur lors de la création de la surveillance.';
-          
-          // Handle both old and new error response formats
+
           if (error.error) {
             if (typeof error.error === 'object' && error.error.message) {
-              // New error format with ErrorResponse object
               errorMsg = error.error.message;
               if (errorMsg === "Il existe deja une surveillance dans cette salle pendant cette periode.") {
                 errorMsg = "Il existe déjà une surveillance dans cette salle pendant cette période.";
               }
             } else if (typeof error.error === 'string') {
-              // Old error format (string)
               errorMsg = error.error;
-              // Handle the non-accented version if received
               if (errorMsg === "Il existe deja une surveillance dans cette salle pendant cette periode.") {
                 errorMsg = "Il existe déjà une surveillance dans cette salle pendant cette période.";
               }
@@ -168,7 +225,7 @@ export class AddSurveillanceDialogComponent implements OnInit {
           } else if (error.message) {
             errorMsg = error.message;
           }
-          
+
           this.showError(errorMsg);
           this.loading = false;
           return throwError(() => new Error(errorMsg));
@@ -177,7 +234,6 @@ export class AddSurveillanceDialogComponent implements OnInit {
       .subscribe(() => {
         this.dialogRef.close(true);
         this.showSuccess('Surveillance créée avec succès');
-        this.loading = false;
       });
   }
 
@@ -198,4 +254,4 @@ export class AddSurveillanceDialogComponent implements OnInit {
       panelClass: ['error-snackbar']
     });
   }
-} 
+}

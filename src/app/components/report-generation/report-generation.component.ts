@@ -22,7 +22,7 @@ export enum Semestre {
 
 export enum TypeSession {
   DS = 'DS',
-  EXAMEN = 'EXAMEN',
+  PRINCIPALE = 'PRINCIPALE',
   RATTRAPAGE = 'RATTRAPAGE'
 }
 

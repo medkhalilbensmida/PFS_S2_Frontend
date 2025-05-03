@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -10,6 +10,8 @@ import { CommonModule } from '@angular/common';
 import { AddSurveillanceDialogComponent } from './add-surveillance-dialog/add-surveillance-dialog.component';
 import { AssignEnseignantDialogComponent } from './assign-enseignant-dialog/assign-enseignant-dialog.component';
 import { UpdateSurveillanceDialogComponent } from './update-surveillance-dialog/update-surveillance-dialog.component';
+import { SendEmailDialogComponent } from './send-email-dialog/send-email-dialog.component';
+import { AuthService } from '../../pages/authentication/services/auth.service';
 
 @Component({
   selector: 'app-surveillance-management',
@@ -23,11 +25,13 @@ import { UpdateSurveillanceDialogComponent } from './update-surveillance-dialog/
   styleUrls: ['./surveillance-management.component.scss']
 })
 export class SurveillanceManagementComponent implements OnInit {
+
   surveillances: Surveillance[] = [];
   enseignants: Enseignant[] = [];
   availableEnseignants: Enseignant[] = [];
   sessionId: number | null = null;
   loading = false;
+  isAdmin: boolean = false;
   
   // Ajout de la colonne statut
   displayedColumns: string[] = ['statut', 'dateDebut', 'dateFin', 'salle', 'matiere', 'enseignantPrincipal', 'enseignantSecondaire', 'actions'];
@@ -37,10 +41,18 @@ export class SurveillanceManagementComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
+    this.isAdmin = this.authService.isAdmin();
+    
+    // Filter columns based on role
+    if (!this.isAdmin) {
+      this.displayedColumns = this.displayedColumns.filter(col => col !== 'actions');
+    }
+    
     this.route.paramMap.subscribe(params => {
       const id = params.get('sessionId');
       this.sessionId = id ? +id : null;
@@ -135,6 +147,21 @@ export class SurveillanceManagementComponent implements OnInit {
     });
   }
 
+  openSendEmailDialog(): void {
+      if (!this.sessionId) return;
+      
+      const dialogRef = this.dialog.open(SendEmailDialogComponent, {
+        width: '600px',
+        data: { sessionId: this.sessionId }
+      });
+  
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.loadSurveillances();
+        }
+      });
+    }
+
   openAssignEnseignantDialog(surveillance: Surveillance): void {
     const dialogRef = this.dialog.open(AssignEnseignantDialogComponent, {
       width: '600px',
@@ -177,6 +204,7 @@ export class SurveillanceManagementComponent implements OnInit {
       }
     });
   }
+
 
   deleteSurveillance(id: number): void {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette surveillance ?')) {

@@ -23,30 +23,9 @@
   </button>
   }
 
-  <!-- Search -->
-  <button
-    mat-mini-fab
-    color="inherit"
-    (click)="openDialog()"
-    class="d-flex justify-content-center"
-  >
-    <i class="iconify icon-20 d-flex" data-icon="solar:magnifer-outline"></i>
-  </button>
+ 
 
-  <div class="d-none d-lg-flex">
-    <button
-      mat-mini-fab
-      color="inherit"
-      [matMenuTriggerFor]="appsmenu"
-      aria-label="Notifications"
-      class="d-flex justify-content-center"
-    >
-      <i class="iconify icon-20 d-flex" data-icon="solar:widget-3-line-duotone"></i>
-    </button>
-    <mat-menu #appsmenu="matMenu" class="apps-dd cardWithShadow">
-      <!-- Apps menu content -->
-    </mat-menu>
-  </div>
+  
 
   <span class="flex-1-auto"></span>
 
