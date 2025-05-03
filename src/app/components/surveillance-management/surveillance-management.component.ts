@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { AddSurveillanceDialogComponent } from './add-surveillance-dialog/add-surveillance-dialog.component';
 import { AssignEnseignantDialogComponent } from './assign-enseignant-dialog/assign-enseignant-dialog.component';
 import { UpdateSurveillanceDialogComponent } from './update-surveillance-dialog/update-surveillance-dialog.component';
+import { SendEmailDialogComponent } from './send-email-dialog/send-email-dialog.component';
 import { AuthService } from '../../pages/authentication/services/auth.service';
 
 @Component({
@@ -24,6 +25,7 @@ import { AuthService } from '../../pages/authentication/services/auth.service';
   styleUrls: ['./surveillance-management.component.scss']
 })
 export class SurveillanceManagementComponent implements OnInit {
+
   surveillances: Surveillance[] = [];
   enseignants: Enseignant[] = [];
   availableEnseignants: Enseignant[] = [];
@@ -145,6 +147,21 @@ export class SurveillanceManagementComponent implements OnInit {
     });
   }
 
+  openSendEmailDialog(): void {
+      if (!this.sessionId) return;
+      
+      const dialogRef = this.dialog.open(SendEmailDialogComponent, {
+        width: '600px',
+        data: { sessionId: this.sessionId }
+      });
+  
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.loadSurveillances();
+        }
+      });
+    }
+
   openAssignEnseignantDialog(surveillance: Surveillance): void {
     const dialogRef = this.dialog.open(AssignEnseignantDialogComponent, {
       width: '600px',
@@ -187,6 +204,7 @@ export class SurveillanceManagementComponent implements OnInit {
       }
     });
   }
+
 
   deleteSurveillance(id: number): void {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette surveillance ?')) {
