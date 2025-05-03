@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SurveillanceService, Enseignant, DisponibiliteEnseignantDTO } from '../../../services/surveillance.service';
+import { SurveillanceService, Enseignant, DisponibiliteEnseignantDTO, NotificationEmailDTO } from '../../../services/surveillance.service';
 import { MaterialModule } from '../../../material.module';
 import { CommonModule } from '@angular/common';
 import { catchError, throwError, map } from 'rxjs';
@@ -10,6 +10,7 @@ import { catchError, throwError, map } from 'rxjs';
 interface DisponibiliteResponseItem extends DisponibiliteEnseignantDTO {
   enseignantNom?: string;
   enseignantPrenom?: string;
+ 
 }
 
 interface DialogData {
@@ -21,6 +22,7 @@ interface DialogData {
   salleName?: string;
   matiereName?: string;
   statut?: string;
+  sessionId?: number;
 }
 
 @Component({
@@ -110,7 +112,7 @@ export class AssignEnseignantDialogComponent implements OnInit {
     if (this.assignForm.invalid) {
       return;
     }
-
+  
     this.loading = true;
     const formValue = this.assignForm.value;
     
@@ -118,19 +120,15 @@ export class AssignEnseignantDialogComponent implements OnInit {
       enseignantPrincipalId: formValue.enseignantPrincipalId || undefined,
       enseignantSecondaireId: formValue.enseignantSecondaireId || undefined
     };
-
+  
     this.surveillanceService.assignEnseignants(this.data.surveillanceId, request)
       .pipe(
         catchError(error => {
           this.loading = false;
-          
-          console.log(error); 
-
           let errorMessage = 'Erreur lors de l\'affectation des enseignants';
           if (error.error && typeof error.error === 'string') {
             errorMessage = error.error;
           } else if (error.error?.message) {
-          
             errorMessage = error.error.message;
           }
           this.showError(errorMessage);
@@ -138,10 +136,76 @@ export class AssignEnseignantDialogComponent implements OnInit {
         })
       )
       .subscribe(() => {
+        // Send emails after successful assignment
+        this.sendAssignmentEmails(formValue.enseignantPrincipalId, formValue.enseignantSecondaireId);
+        
         this.dialogRef.close(true);
         this.showSuccess('Enseignants affectés avec succès');
         this.loading = false;
       });
+  }
+  
+  // Helper method to send emails to both professors
+  private sendAssignmentEmails(principalId: number | null, secondaireId: number | null): void {
+    if (!this.data.sessionId) {
+      console.error('Cannot send emails - session ID is missing');
+      return;
+    }
+  
+    // Array to hold all email sending promises
+    const emailPromises: Promise<void>[] = [];
+  
+    // Helper function to fetch and send email
+    const fetchAndSendEmail = async (teacherId: number, role: string) => {
+      try {
+        // Fetch only the specific teacher's details
+        const teacher = await this.surveillanceService.getEnseignantById(teacherId).toPromise();
+        if (teacher?.email) {
+          await this.sendAssignmentEmail(teacher.email, role);
+        }
+      } catch (error) {
+        console.error(`Failed to fetch or send email for teacher ${teacherId}`, error);
+      }
+    };
+  
+    // Process principal if assigned
+    if (principalId) {
+      emailPromises.push(fetchAndSendEmail(principalId, 'principal'));
+    }
+  
+    // Process secondary if assigned
+    if (secondaireId) {
+      emailPromises.push(fetchAndSendEmail(secondaireId, 'secondaire'));
+    }
+  
+    // Wait for all emails to be processed
+    Promise.all(emailPromises).catch(error => {
+      console.error('Error sending one or more emails', error);
+    });
+  }
+  
+  private sendAssignmentEmail(email: string, role: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const request: NotificationEmailDTO = {
+        template: 'surveillance-assignment',
+        toEmail: email,
+        message: `Vous avez été assigné comme enseignant ${role === 'principal' ? 'principal' : 'secondaire'} pour une surveillance.`,
+        date: new Date(),
+        session: this.data.sessionId!,
+        subject: 'Nouvelle affectation de surveillance'
+      };
+  
+      this.surveillanceService.sendEmailDTO(request).subscribe({
+        next: () => {
+          console.log(`Email sent successfully to ${email}`);
+          resolve();
+        },
+        error: (error) => {
+          console.error(`Failed to send email to ${email}`, error);
+          reject(error);
+        }
+      });
+    });
   }
 
   onCancel(): void {
@@ -173,4 +237,5 @@ export class AssignEnseignantDialogComponent implements OnInit {
     console.warn(`Teacher details not found for ID: ${id}`);
     return `Enseignant ID: ${id}`;
   }
-} 
+
+}

@@ -173,7 +173,8 @@ export class SurveillanceManagementComponent implements OnInit {
         dateFin: surveillance.dateFin,
         salleName: surveillance.salleName,
         matiereName: surveillance.matiereName,
-        statut: surveillance.statut
+        statut: surveillance.statut,
+        sessionId : this.sessionId
       }
     });
 

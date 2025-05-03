@@ -387,4 +387,9 @@ sendEmailDTO(dto: NotificationEmailDTO): Observable<string> {
 // }
 
 
+getEnseignantById(id: number): Observable<Enseignant> {
+  return this.http.get<Enseignant>(`${this.apiUrl}/enseignants/${id}`);
+}
+
+
 }
