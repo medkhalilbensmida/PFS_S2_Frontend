@@ -34,3 +34,58 @@
   .profile-menu-img.default-profile-img {
     padding: 8px;
   }
+
+  /* Notification styles */
+.notification-item {
+  display: flex;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-items: flex-start;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+
+  &.unread {
+    background-color: rgba(0, 123, 255, 0.05);
+    .notification-message {
+      font-weight: 500;
+    }
+  }
+}
+
+.notification-icon {
+  margin-right: 12px;
+  color: #3f51b5;
+  margin-top: 2px;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-message {
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.notification-date {
+  font-size: 12px;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Adjust badge position */
+.mat-badge-content {
+  top: 8px !important;
+  right: 8px !important;
+}
+
+
+.topbar-dd {
+  z-index: 1001 !important;
+}

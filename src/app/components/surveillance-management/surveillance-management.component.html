@@ -10,17 +10,17 @@
       <div *ngIf="loading" class="loading-container">
         <mat-spinner diameter="40"></mat-spinner>
       </div>
+      @if(authService.isAdmin()) {
+        <div class="actions-container" *ngIf="!loading" style="display: flex; gap: 10px;">
+          <button mat-raised-button color="primary" (click)="openAddSurveillanceDialog()">
+            <mat-icon>add</mat-icon> Nouvelle Surveillance
+          </button>
 
-      <div class="actions-container" *ngIf="!loading" style="display: flex; gap: 10px;">
-        <button mat-raised-button color="primary" (click)="openAddSurveillanceDialog()">
-          <mat-icon>add</mat-icon> Nouvelle Surveillance
-        </button>
-
-        <button mat-raised-button color="accent" (click)="openSendEmailDialog()">
-          <mat-icon>email</mat-icon> Email
-        </button>
-      </div>
-
+          <button mat-raised-button color="accent" (click)="openSendEmailDialog()">
+            <mat-icon>email</mat-icon> Email
+          </button>
+        </div>
+      }
 
 
 
@@ -109,9 +109,11 @@
       <div *ngIf="!loading && surveillances.length === 0" class="no-data">
         <mat-icon>info</mat-icon>
         <p>Aucune surveillance n'est disponible pour cette session.</p>
-        <button mat-raised-button color="primary" (click)="openAddSurveillanceDialog()">
-          Ajouter une surveillance
-        </button>
+        @if(authService.isAdmin()) {
+          <button mat-raised-button color="primary" (click)="openAddSurveillanceDialog()">
+            Ajouter une surveillance
+          </button>
+        }
       </div>
 
     </mat-card-content>

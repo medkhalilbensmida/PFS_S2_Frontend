@@ -15,11 +15,14 @@ import { ProfileService } from 'src/app/pages/apps/account/services/profile.serv
 import { AuthService } from 'src/app/pages/authentication/services/auth.service';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
+import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { RouterModule } from '@angular/router';
+import { NotificationService } from 'src/app/services/notification.service';
+import { NotificationSocketService } from 'src/app/services/notification-socket.service';
 
 @Component({
   selector: 'app-header',
@@ -35,6 +38,7 @@ import { RouterModule } from '@angular/router';
     MatMenuModule,
     MatIconModule,
     MatDividerModule,
+    MatBadgeModule,
     TablerIconsModule,
     RouterModule
   ],
@@ -55,9 +59,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   options: any;
 
+  notifications: any[] = [];
+  unreadCount = 0;
+
   constructor(
     public authService: AuthService,
     private profileService: ProfileService,
+    private notificationSocket: NotificationSocketService,
+    private notificationService: NotificationService,
     private http: HttpClient,
     private dialog: MatDialog,
     private settings: CoreService,
@@ -107,6 +116,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
 
     this.loadInitialProfile();
+
+    this.notificationSocket.getNotifications().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(notifications => {
+      if (Array.isArray(notifications)) {
+        this.notifications = notifications;
+      } else {
+        // Single notification received
+        this.notifications = [notifications, ...this.notifications];
+      }
+      this.updateUnreadCount();
+    });
   }
 
   loadInitialProfile(): void {
@@ -224,6 +245,46 @@ export class HeaderComponent implements OnInit, OnDestroy {
       },
       error: () => this.loadDefaultProfileImage()
     });
+  }
+
+  updateUnreadCount(): void {
+    this.unreadCount = this.notifications.filter(n => !n.estLue).length;
+  }
+
+  markAsRead(notification: any): void {
+    if (!notification.estLue) {
+      this.notificationSocket.markAsRead(notification.id);
+      notification.estLue = true;
+      this.updateUnreadCount();
+    }
+  }
+
+  markAllAsRead(): void {
+    const unreadIds = this.notifications
+      .filter(n => !n.estLue)
+      .map(n => n.id);
+    
+    if (unreadIds.length > 0) {
+      this.notificationService.markMultipleAsRead(unreadIds).subscribe({
+        next: () => {
+          this.notifications.forEach(n => n.estLue = true);
+          this.unreadCount = 0;
+        },
+        error: (error) => {
+          console.error('Error marking notifications as read:', error);
+        }
+      });
+    }
+  }
+
+  getNotificationIcon(type: string): string {
+    switch(type) {
+      case 'ANNULATION': return 'cancel';
+      case 'AFFECTATION': return 'assignment_ind';
+      case 'CONFIRMATION': return 'check_circle';
+      case 'RAPPEL': return 'notifications';
+      default: return 'notifications';
+    }
   }
 
 }

@@ -42,7 +42,7 @@ export class SurveillanceManagementComponent implements OnInit {
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
     private fb: FormBuilder,
-    private authService: AuthService
+    public authService: AuthService
   ) { }
 
   ngOnInit(): void {
