@@ -12,9 +12,6 @@ import { ErrorStateMatcher } from '@angular/material/core';
 import { SurveillanceService, Enseignant } from '../../services/surveillance.service';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
-
-
-
 export enum Semestre {
   S1 = 'S1',
   S2 = 'S2'
@@ -37,11 +34,12 @@ export interface AnneeUniversitaire {
   selector: 'app-report-generation',
   standalone: true,
   imports: [
-    MaterialModule, 
-    CommonModule, 
+    MaterialModule,
+    CommonModule,
     ReactiveFormsModule,
     MatAutocompleteModule
-  ],  templateUrl: './report-generation.component.html',
+  ],
+  templateUrl: './report-generation.component.html',
   styleUrls: ['./report-generation.component.scss']
 })
 export class ReportGenerationComponent implements OnInit {
@@ -55,7 +53,6 @@ export class ReportGenerationComponent implements OnInit {
   teachers: Enseignant[] = [];
   anneesUniversitaires: AnneeUniversitaire[] = [];
   loadingAnnees = false;
-
 
   constructor(
     private fb: FormBuilder,
@@ -75,7 +72,6 @@ export class ReportGenerationComponent implements OnInit {
     this.loadAnneesUniversitaires();
     this.setupTeacherFiltering();
   }
-
 
   private loadAnneesUniversitaires(): void {
     this.loadingAnnees = true;
@@ -104,10 +100,10 @@ export class ReportGenerationComponent implements OnInit {
 
   private setupTeacherFiltering(): void {
     console.log("Setting up teacher filtering");
-    
+
     // Initial load (optional)
     this.loadInitialTeachers();
-  
+
     // Reactive filtering
     this.filterForm.valueChanges.pipe(
       debounceTime(300),
@@ -116,7 +112,7 @@ export class ReportGenerationComponent implements OnInit {
         const params = this.getFilterParams();
         console.log("Filter params changed:", params);
         
-        if (params['anneeUniversitaire'] || params['semestre'] || params['typeSession'] || true) {
+        if (params['anneeUniversitaire'] || params['semestre'] || params['typeSession']) {
           this.loadingTeachers = true;
           return this.reportService.getTeachersWithSurveillances(params).pipe(
             catchError(err => {
@@ -144,10 +140,10 @@ export class ReportGenerationComponent implements OnInit {
       }
     });
   }
-  
+
   private loadInitialTeachers(): void {
     const initialParams = this.getFilterParams();
-    if (initialParams['anneeUniversitaire'] || initialParams['semestre'] || initialParams['typeSession'] || true) {
+    if (initialParams['anneeUniversitaire'] || initialParams['semestre'] || initialParams['typeSession']) {
       this.loadingTeachers = true;
       this.reportService.getTeachersWithSurveillances(initialParams).subscribe({
         next: (teachers) => {
@@ -166,7 +162,7 @@ export class ReportGenerationComponent implements OnInit {
   exportToExcel(): void {
     this.loading = true;
     const params = this.getFilterParams();
-    
+
     this.reportService.exportToExcel(params)
       .pipe(
         catchError(error => {
@@ -183,7 +179,7 @@ export class ReportGenerationComponent implements OnInit {
   exportToCsv(): void {
     this.loading = true;
     const params = this.getFilterParams();
-    
+
     this.reportService.exportToCsv(params)
       .pipe(
         catchError(error => {
@@ -196,9 +192,6 @@ export class ReportGenerationComponent implements OnInit {
         this.downloadFile(blob, 'surveillances.csv');
       });
   }
-  
-
-  
 
   onEnseignantSelected(event: any): void {
     const enseignant = event.option.value;
@@ -211,11 +204,11 @@ export class ReportGenerationComponent implements OnInit {
   }
 
   filterEnseignants(event: any): void {
-    const searchValue = typeof event === 'string' 
+    const searchValue = typeof event === 'string'
       ? event.toLowerCase()
       : event?.target?.value?.toLowerCase() || '';
-      
-    this.filteredEnseignants = this.enseignants.filter(enseignant =>
+
+    this.filteredTeachers = this.teachers.filter(enseignant =>
       enseignant.prenom && enseignant.nom && 
       `${enseignant.prenom} ${enseignant.nom}`.toLowerCase().includes(searchValue)
     );
@@ -227,9 +220,6 @@ export class ReportGenerationComponent implements OnInit {
     return enseignant.prenom && enseignant.nom ? `${enseignant.prenom} ${enseignant.nom}` : '';
   }
 
-
-  
-
   generateConvocation(): void {
     const { enseignantId, ...params } = this.filterForm.value;
     if (!enseignantId) {
@@ -238,7 +228,7 @@ export class ReportGenerationComponent implements OnInit {
     }
 
     this.loading = true;
-    
+
     this.reportService.generateConvocation(enseignantId, params)
       .pipe(
         catchError(error => {
@@ -252,11 +242,10 @@ export class ReportGenerationComponent implements OnInit {
       });
   }
 
-
   generateAllConvocations(): void {
     this.loading = true;
     const params = this.getFilterParams();
-    
+
     this.reportService.generateAllConvocations(params)
       .pipe(
         catchError(error => {
@@ -287,102 +276,98 @@ export class ReportGenerationComponent implements OnInit {
     this.showSuccess(`${filename} téléchargé avec succès`);
   }
 
-  // Add these methods to your ReportGenerationComponent class
-// Update sendEmailToSelectedTeacher
-sendEmailToSelectedTeacher(): void {
-  const enseignantId = this.filterForm.get('enseignantId')?.value;
-  if (!enseignantId) {
-    this.showError('Veuillez sélectionner un enseignant');
-    return;
-  }
-
-  const selectedTeacher = this.teachers.find(t => t.id === enseignantId);
-  if (!selectedTeacher) {
-    this.showError('Enseignant non trouvé');
-    return;
-  }
-
-  this.loading = true;
-  const params = this.getFilterParams();
-
-  const emailData = {
-    toEmail: selectedTeacher.email,
-    subject: 'Convocation pour surveillance d\'examen',
-    template: 'convocation-email',
-    enseignantId: selectedTeacher.id,
-    professorName: `${selectedTeacher.prenom} ${selectedTeacher.nom}`,
-    message: 'Veuillez trouver ci-joint votre convocation pour les surveillances d\'examen.',
-    date: new Date(),
-    anneeUniversitaire: params['anneeUniversitaire'],
-    semestre: params['semestre'],
-    typeSession: params['typeSession']
-  };
-
-  this.reportService.sendConvocationEmail(emailData).pipe(
-    catchError(error => {
-      this.handleError(error);
-      return throwError(() => error);
-    }),
-    finalize(() => this.loading = false)
-  ).subscribe({
-    next: (response) => {
-      console.log('Email sent response:', response);
-      this.showSuccess(`Email envoyé à ${selectedTeacher.prenom} ${selectedTeacher.nom}`);
+  sendEmailToSelectedTeacher(): void {
+    const enseignantId = this.filterForm.get('enseignantId')?.value;
+    if (!enseignantId) {
+      this.showError('Veuillez sélectionner un enseignant');
+      return;
     }
-  });
-}
 
-// Update sendEmailToAllFilteredTeachers
-sendEmailToAllFilteredTeachers(): void {
-  if (this.filteredTeachers.length === 0) {
-    this.showError('Aucun enseignant à qui envoyer');
-    return;
-  }
+    const selectedTeacher = this.teachers.find(t => t.id === enseignantId);
+    if (!selectedTeacher) {
+      this.showError('Enseignant non trouvé');
+      return;
+    }
 
-  this.loading = true;
-  const params = this.getFilterParams();
-  const requests = this.filteredTeachers.map(teacher => {
+    this.loading = true;
+    const params = this.getFilterParams();
+
     const emailData = {
-      toEmail: teacher.email,
+      toEmail: selectedTeacher.email,
       subject: 'Convocation pour surveillance d\'examen',
       template: 'convocation-email',
-      enseignantId: teacher.id,
-      professorName: `${teacher.prenom} ${teacher.nom}`,
+      enseignantId: selectedTeacher.id,
+      professorName: `${selectedTeacher.prenom} ${selectedTeacher.nom}`,
       message: 'Veuillez trouver ci-joint votre convocation pour les surveillances d\'examen.',
       date: new Date(),
       anneeUniversitaire: params['anneeUniversitaire'],
       semestre: params['semestre'],
       typeSession: params['typeSession']
     };
-    return this.reportService.sendConvocationEmail(emailData).pipe(
-      catchError(error => {
-        // Continue with other requests even if one fails
-        console.error(`Failed to send email to ${teacher.email}`, error);
-        return of(`Failed to send to ${teacher.email}`);
-      })
-    );
-  });
 
-  forkJoin(requests).pipe(
-    finalize(() => this.loading = false)
-  ).subscribe({
-    next: (responses) => {
-      const successCount = responses.filter(r => typeof r === 'string' && r.startsWith('Convocation email sent successfully')).length;
-      const failedCount = this.filteredTeachers.length - successCount;
-      
-      if (failedCount === 0) {
-        this.showSuccess(`Emails envoyés avec succès à ${successCount} enseignants`);
-      } else {
-        this.showSuccess(`Emails envoyés: ${successCount} succès, ${failedCount} échecs`);
+    this.reportService.sendConvocationEmail(emailData).pipe(
+      catchError(error => {
+        this.handleError(error);
+        return throwError(() => error);
+      }),
+      finalize(() => this.loading = false)
+    ).subscribe({
+      next: (response) => {
+        console.log('Email sent response:', response);
+        this.showSuccess(`Email envoyé à ${selectedTeacher.prenom} ${selectedTeacher.nom}`);
       }
+    });
+  }
+
+  sendEmailToAllFilteredTeachers(): void {
+    if (this.filteredTeachers.length === 0) {
+      this.showError('Aucun enseignant à qui envoyer');
+      return;
     }
-  });
-}
+
+    this.loading = true;
+    const params = this.getFilterParams();
+    const requests = this.filteredTeachers.map(teacher => {
+      const emailData = {
+        toEmail: teacher.email,
+        subject: 'Convocation pour surveillance d\'examen',
+        template: 'convocation-email',
+        enseignantId: teacher.id,
+        professorName: `${teacher.prenom} ${teacher.nom}`,
+        message: 'Veuillez trouver ci-joint votre convocation pour les surveillances d\'examen.',
+        date: new Date(),
+        anneeUniversitaire: params['anneeUniversitaire'],
+        semestre: params['semestre'],
+        typeSession: params['typeSession']
+      };
+      return this.reportService.sendConvocationEmail(emailData).pipe(
+        catchError(error => {
+          console.error(`Failed to send email to ${teacher.email}`, error);
+          return of(`Failed to send to ${teacher.email}`);
+        })
+      );
+    });
+
+    forkJoin(requests).pipe(
+      finalize(() => this.loading = false)
+    ).subscribe({
+      next: (responses) => {
+        const successCount = responses.filter(r => typeof r !== 'string' || !r.startsWith('Failed')).length;
+        const failedCount = this.filteredTeachers.length - successCount;
+
+        if (failedCount === 0) {
+          this.showSuccess(`Emails envoyés avec succès à ${successCount} enseignants`);
+        } else {
+          this.showSuccess(`Emails envoyés: ${successCount} succès, ${failedCount} échecs`);
+        }
+      }
+    });
+  }
 
   private handleError(error: any): void {
     console.error('Error:', error);
     let message = 'Une erreur est survenue';
-    
+
     if (error.status === 401) {
       message = 'Session expirée. Veuillez vous reconnecter.';
     } else if (error.status === 403) {
@@ -390,7 +375,7 @@ sendEmailToAllFilteredTeachers(): void {
     } else if (error.error?.message) {
       message = error.error.message;
     }
-    
+
     this.showError(message);
   }
 

@@ -23,10 +23,6 @@
   </button>
   }
 
- 
-
-  
-
   <span class="flex-1-auto"></span>
 
   <button
@@ -50,137 +46,138 @@
   </button>
 
   <!-- Notification Dropdown -->
-<!-- Notification Dropdown -->
-<button
-  mat-mini-fab
-  color="inherit"
-  [matMenuTriggerFor]="notificationmenu"
-  aria-label="Notifications"
-  class="d-flex justify-content-center"
-  [matBadge]="unreadCount" 
-  matBadgeColor="warn"
-  matBadgePosition="above after"
->
-  <i class="iconify icon-20 d-flex" data-icon="solar:bell-line-duotone"></i>
-</button>
+  @if(userData?.role === 'ROLE_ENSEIGNANT') {
+  <button
+    mat-mini-fab
+    color="inherit"
+    [matMenuTriggerFor]="notificationmenu"
+    aria-label="Notifications"
+    class="d-flex justify-content-center"
+    [matBadge]="unreadCount" 
+    matBadgeColor="warn"
+    matBadgePosition="above after"
+  >
+    <i class="iconify icon-20 d-flex" data-icon="solar:bell-line-duotone"></i>
+  </button>
 
-<mat-menu #notificationmenu="matMenu" class="topbar-dd cardWithShadow" style="width: 350px;">
-  <div class="notification-dropdown">
-    <div class="notification-header p-x-16 p-y-8">
-      <h6 class="f-s-16 f-w-600 m-0">Notifications</h6>
-      <button mat-button (click)="markAllAsRead()" *ngIf="unreadCount > 0" class="f-s-12">
-        Tout marquer comme lu
-      </button>
-    </div>
+  <mat-menu #notificationmenu="matMenu" class="topbar-dd cardWithShadow" style="width: 350px;">
+    <div class="notification-dropdown">
+      <div class="notification-header p-x-16 p-y-8">
+        <h6 class="f-s-16 f-w-600 m-0">Notifications</h6>
+        <button mat-button (click)="markAllAsRead()" *ngIf="unreadCount > 0" class="f-s-12">
+          Tout marquer comme lu
+        </button>
+      </div>
 
-    <mat-divider></mat-divider>
+      <mat-divider></mat-divider>
 
-    <div class="notification-list" style="max-height: 400px; overflow-y: auto;">
-      <div *ngFor="let notification of notifications" 
-           class="notification-item p-x-16 p-y-8" 
-           [class.unread]="!notification.estLue"
-           (click)="markAsRead(notification)">
-        <mat-icon class="notification-icon">{{getNotificationIcon(notification.type)}}</mat-icon>
-        <div class="notification-content">
-          <div class="notification-message f-s-14">{{notification.message}}</div>
-          <div class="notification-date f-s-12 text-muted">{{notification.dateEnvoi | date:'dd/MM/yyyy HH:mm'}}</div>
+      <div class="notification-list" style="max-height: 400px; overflow-y: auto;">
+        <div *ngFor="let notification of notifications" 
+             class="notification-item p-x-16 p-y-8" 
+             [class.unread]="!notification.estLue"
+             (click)="markAsRead(notification)">
+          <mat-icon class="notification-icon">{{getNotificationIcon(notification.type)}}</mat-icon>
+          <div class="notification-content">
+            <div class="notification-message f-s-14">{{notification.message}}</div>
+            <div class="notification-date f-s-12 text-muted">{{notification.dateEnvoi | date:'dd/MM/yyyy HH:mm'}}</div>
+          </div>
+        </div>
+
+        <div *ngIf="notifications.length === 0" class="no-notifications p-x-16 p-y-24 text-center">
+          Aucune notification
         </div>
       </div>
-
-      <div *ngIf="notifications.length === 0" class="no-notifications p-x-16 p-y-24 text-center">
-        Aucune notification
-      </div>
     </div>
-  </div>
-</mat-menu>
+  </mat-menu>
+  }
 
-<!-- Profile Dropdown -->
-<button mat-fab extended color="inherit" [matMenuTriggerFor]="profilemenu" class="profile-btn-dd">
-  <div class="d-flex align-items-center gap-2"> <!-- Réduit le gap de 4 à 2 -->
-    <img [src]="profileImage" 
-        (error)="handleImageError($event)"
-        class="rounded-circle profile-img"
-        width="40"  
-        height="40" 
-        *ngIf="profileImage"
-        alt="Photo de profil" />
-    <i data-icon="solar:alt-arrow-down-bold" class="iconify f-s-8"></i>
-  </div>
-</button>
-
-<mat-menu #profilemenu="matMenu" class="topbar-dd cardWithShadow" style="width: 300px;">
-  @if(userData) {
-  <div class="p-x-24 p-y-16">
-    <div class="d-flex align-items-center p-b-16 border-bottom">
+  <!-- Profile Dropdown -->
+  <button mat-fab extended color="inherit" [matMenuTriggerFor]="profilemenu" class="profile-btn-dd">
+    <div class="d-flex align-items-center gap-2"> <!-- Réduit le gap de 4 à 2 -->
       <img [src]="profileImage" 
-           (error)="handleImageError($event)"
-           class="rounded-circle profile-menu-img"
-           width="56"
-           height="56"
-           alt="Photo de profil" />
-        <div class="m-l-16">
-          <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">
-            {{ userData.nom }} {{ userData.prenom }}
-          </h6>
-          <span class="d-block f-s-12 text-muted">{{ userData.email }}</span>
-          <span class="badge bg-light-success text-success f-s-12 f-w-500 mt-1">
-            {{ getUserRoleDisplay() }}
-          </span>
+          (error)="handleImageError($event)"
+          class="rounded-circle profile-img"
+          width="40"  
+          height="40" 
+          *ngIf="profileImage"
+          alt="Photo de profil" />
+      <i data-icon="solar:alt-arrow-down-bold" class="iconify f-s-8"></i>
+    </div>
+  </button>
+
+  <mat-menu #profilemenu="matMenu" class="topbar-dd cardWithShadow" style="width: 300px;">
+    @if(userData) {
+    <div class="p-x-24 p-y-16">
+      <div class="d-flex align-items-center p-b-16 border-bottom">
+        <img [src]="profileImage" 
+             (error)="handleImageError($event)"
+             class="rounded-circle profile-menu-img"
+             width="56"
+             height="56"
+             alt="Photo de profil" />
+          <div class="m-l-16">
+            <h6 class="f-s-16 f-w-600 m-0 mat-subtitle-1">
+              {{ userData.nom }} {{ userData.prenom }}
+            </h6>
+            <span class="d-block f-s-12 text-muted">{{ userData.email }}</span>
+            <span class="badge bg-light-success text-success f-s-12 f-w-500 mt-1">
+              {{ getUserRoleDisplay() }}
+            </span>
+          </div>
         </div>
-      </div>
-      
-      <div class="p-t-16">
-        @if(userData.role === 'ROLE_ADMIN') {
-          <div class="d-flex align-items-center p-y-8">
-            <mat-icon class="text-muted" style="width: 24px;">work_outline</mat-icon>
-            <div class="m-l-16">
-              <div class="f-s-12 text-muted">Fonction</div>
-              <div class="f-s-14 f-w-500">{{ getAdminFonction() }}</div>
-            </div>
-          </div>
-        }
         
-        @if(userData.role === 'ROLE_ENSEIGNANT') {
-          <div class="d-flex align-items-center p-y-8">
-            <mat-icon class="text-muted" style="width: 24px;">school</mat-icon>
-            <div class="m-l-16">
-              <div class="f-s-12 text-muted">Grade</div>
-              <div class="f-s-14 f-w-500">{{ getEnseignantGrade() }}</div>
+        <div class="p-t-16">
+          @if(userData.role === 'ROLE_ADMIN') {
+            <div class="d-flex align-items-center p-y-8">
+              <mat-icon class="text-muted" style="width: 24px;">work_outline</mat-icon>
+              <div class="m-l-16">
+                <div class="f-s-12 text-muted">Fonction</div>
+                <div class="f-s-14 f-w-500">{{ getAdminFonction() }}</div>
+              </div>
             </div>
-          </div>
+          }
+          
+          @if(userData.role === 'ROLE_ENSEIGNANT') {
+            <div class="d-flex align-items-center p-y-8">
+              <mat-icon class="text-muted" style="width: 24px;">school</mat-icon>
+              <div class="m-l-16">
+                <div class="f-s-12 text-muted">Grade</div>
+                <div class="f-s-14 f-w-500">{{ getEnseignantGrade() }}</div>
+              </div>
+            </div>
+            
+            <div class="d-flex align-items-center p-y-8">
+              <mat-icon class="text-muted" style="width: 24px;">business</mat-icon>
+              <div class="m-l-16">
+                <div class="f-s-12 text-muted">Département</div>
+                <div class="f-s-14 f-w-500">{{ getEnseignantDepartement() }}</div>
+              </div>
+            </div>
+          }
           
           <div class="d-flex align-items-center p-y-8">
-            <mat-icon class="text-muted" style="width: 24px;">business</mat-icon>
+            <mat-icon class="text-muted" style="width: 24px;">phone</mat-icon>
             <div class="m-l-16">
-              <div class="f-s-12 text-muted">Département</div>
-              <div class="f-s-14 f-w-500">{{ getEnseignantDepartement() }}</div>
+              <div class="f-s-12 text-muted">Téléphone</div>
+              <div class="f-s-14 f-w-500">{{ userData.telephone }}</div>
             </div>
-          </div>
-        }
-        
-        <div class="d-flex align-items-center p-y-8">
-          <mat-icon class="text-muted" style="width: 24px;">phone</mat-icon>
-          <div class="m-l-16">
-            <div class="f-s-12 text-muted">Téléphone</div>
-            <div class="f-s-14 f-w-500">{{ userData.telephone }}</div>
           </div>
         </div>
       </div>
-    </div>
-    
-    <mat-divider></mat-divider>
-    
-    <div class="p-x-16 p-y-8">
-      <button mat-menu-item [routerLink]="['theme-pages/account-setting']">
-        <mat-icon>settings</mat-icon>
-        Paramètres du compte
-      </button>
       
-      <button mat-menu-item (click)="authService.signOut()">
-        <mat-icon>logout</mat-icon>
-        <span>Déconnexion</span>
-      </button>
-    </div>
-    }
-  </mat-menu>
-  </mat-toolbar>
+      <mat-divider></mat-divider>
+      
+      <div class="p-x-16 p-y-8">
+        <button mat-menu-item [routerLink]="['theme-pages/account-setting']">
+          <mat-icon>settings</mat-icon>
+          Paramètres du compte
+        </button>
+        
+        <button mat-menu-item (click)="authService.signOut()">
+          <mat-icon>logout</mat-icon>
+          <span>Déconnexion</span>
+        </button>
+      </div>
+      }
+    </mat-menu>
+</mat-toolbar>
