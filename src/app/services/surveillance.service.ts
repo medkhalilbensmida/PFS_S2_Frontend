@@ -336,7 +336,26 @@ export class SurveillanceService {
     );
   }
 
-  sendEmail(emailData: NotificationEmailDTO): Observable<any> {
-    return this.http.post(`${this.apiUrl}/notifications/send-email`, emailData);
-  }
+// sendTemplatedEmail(dto: NotificationEmailDTO): Observable<void> {
+//   const mailRequest: MailRequest = {
+//     toEmail: dto.toEmail,
+//     subject: dto.subject,
+//     template: dto.template,
+//     isHtml: true,
+//     context: {
+//       professorName: `${dto.prenom} ${dto.nom}`,
+//       message: dto.message,
+//       date: new Date().toLocaleDateString()
+//     }
+//   };
+  
+//   return this.http.post<void>(`${this.apiUrl}/emails/send-templated`, mailRequest);
+// }
+
+
+getEnseignantById(id: number): Observable<Enseignant> {
+  return this.http.get<Enseignant>(`${this.apiUrl}/enseignants/${id}`);
+}
+
+
 }

@@ -3,6 +3,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_CONFIG } from '../pages/authentication/api.config';
 import { AuthService } from '../pages/authentication/services/auth.service';
+import { Enseignant } from './surveillance.service';
+import { AnneeUniversitaire } from '../components/report-generation/report-generation.component';
 
 export enum Semestre {
   S1 = 'S1',
@@ -19,6 +21,7 @@ export enum TypeSession {
   providedIn: 'root'
 })
 export class ReportService {
+
   private apiUrl = `${API_CONFIG.BASE_URL}/surveillances`; // Add /surveillances to match controller mapping
 
   constructor(
@@ -61,6 +64,27 @@ export class ReportService {
       headers: this.getHeaders(),
       params,
       responseType: 'blob'
+    });
+  }
+
+
+  getTeachersWithSurveillances(params: any): Observable<Enseignant[]> {
+    return this.http.get<Enseignant[]>(`${this.apiUrl}/teachers-with-surveillances`, {
+      headers: this.getHeaders(),
+      params
+    });
+  }
+
+  getAnneesUniversitaires(): Observable<AnneeUniversitaire[]> {
+    return this.http.get<AnneeUniversitaire[]>(`${API_CONFIG.BASE_URL}/annees`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  sendConvocationEmail(emailData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/send-convocation`, emailData, {
+      headers: this.getHeaders(),
+      responseType: 'text'  // Explicitly expect text response
     });
   }
 }

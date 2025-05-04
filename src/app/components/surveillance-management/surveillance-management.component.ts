@@ -42,7 +42,7 @@ export class SurveillanceManagementComponent implements OnInit {
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
     private fb: FormBuilder,
-    private authService: AuthService
+    public authService: AuthService
   ) { }
 
   ngOnInit(): void {
@@ -173,7 +173,8 @@ export class SurveillanceManagementComponent implements OnInit {
         dateFin: surveillance.dateFin,
         salleName: surveillance.salleName,
         matiereName: surveillance.matiereName,
-        statut: surveillance.statut
+        statut: surveillance.statut,
+        sessionId : this.sessionId
       }
     });
 
