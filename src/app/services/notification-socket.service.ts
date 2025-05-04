@@ -82,9 +82,9 @@ export class NotificationSocketService implements OnDestroy {
     if (currentUser && currentUser.email) {
         // Subscribe using email as the user destination
         this.stompClient.subscribe(
-            `/user/${currentUser.email}/queue/notifications`,
-            (message) => this.handleNotificationMessage(message)
-        );
+          `/user/queue/notifications`, // ✅ Correct
+          (message) => this.handleNotificationMessage(message)
+      );
 
         // Request initial load
         this.stompClient.publish({
