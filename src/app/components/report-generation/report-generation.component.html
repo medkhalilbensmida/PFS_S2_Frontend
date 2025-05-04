@@ -17,14 +17,30 @@
   
             <div class="row">
               <!-- Année Universitaire -->
-              <div class="col-md-6 col-lg-3">
+              <!-- <div class="col-md-6 col-lg-3">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>Année Universitaire</mat-label>
                   <input matInput formControlName="anneeUniversitaire" placeholder="Ex: 2024-2025">
                   <mat-icon matSuffix>calendar_today</mat-icon>
                 </mat-form-field>
               </div>
-  
+   -->
+              <!-- Replace the anneeUniversitaire input with this: -->
+<div class="col-md-6 col-lg-3">
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Année Universitaire</mat-label>
+    <mat-select formControlName="anneeUniversitaire">
+      <mat-option [value]="null">Toutes</mat-option>
+      <mat-option *ngFor="let annee of anneesUniversitaires" 
+                  [value]="annee.dateDebut.split('-')[0] + '-' + annee.dateFin.split('-')[0]">
+        {{ annee.dateDebut.split('-')[0] }}-{{ annee.dateFin.split('-')[0] }}
+        <span *ngIf="annee.estActive"> (Active)</span>
+      </mat-option>
+    </mat-select>
+    <mat-icon matSuffix>calendar_today</mat-icon>
+    <mat-hint *ngIf="loadingAnnees">Chargement des années universitaires...</mat-hint>
+  </mat-form-field>
+</div>
               <!-- Semestre -->
               <div class="col-md-6 col-lg-3">
                 <mat-form-field appearance="outline" class="w-100">
@@ -55,8 +71,8 @@
   
               <!-- ID Enseignant -->
               <!-- Replace the enseignantId form field with this updated version -->
-                <div class="col-md-6 col-lg-3">
-                  <mat-form-field appearance="outline" class="w-100">
+                <!-- <div class="col-md-6 col-lg-3"> -->
+                  <!-- <mat-form-field appearance="outline" class="w-100">
                     <mat-label>ID Enseignant</mat-label>
                     <input matInput 
                           type="number" 
@@ -69,7 +85,21 @@
                       {{getEnseignantIdErrorMessage()}}
                     </mat-error>
                   </mat-form-field>
+                </div> -->
+                <div class="col-md-6 col-lg-3">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Enseignant</mat-label>
+                    <mat-select formControlName="enseignantId">
+                      <mat-option [value]="null">Tous</mat-option>
+                      <mat-option *ngFor="let teacher of filteredTeachers" [value]="teacher.id">
+                        {{ teacher.prenom }} {{ teacher.nom }} ({{ teacher.grade }})
+                      </mat-option>
+                    </mat-select>
+                    <mat-icon matSuffix>person</mat-icon>
+                    <mat-hint *ngIf="loadingTeachers">Chargement des enseignants...</mat-hint>
+                  </mat-form-field>
                 </div>
+                
             </div>
           </mat-expansion-panel>
   
@@ -99,6 +129,18 @@
                   <mat-icon>groups</mat-icon>
                   Générer Toutes les Convocations
                 </button>
+
+                <button mat-raised-button color="primary" (click)="sendEmailToSelectedTeacher()" 
+                      [disabled]="loading || !filterForm.get('enseignantId')?.value" class="action-button">
+                <mat-icon>email</mat-icon>
+                Envoyer email (Professeur sélectionné)
+              </button>
+
+              <button mat-raised-button color="accent" (click)="sendEmailToAllFilteredTeachers()" 
+                      [disabled]="loading || filteredTeachers.length === 0" class="action-button">
+                <mat-icon>email</mat-icon>
+                Envoyer email (Tous les professeurs filtrés)
+              </button>
               </div>
             </div>
           </div>
