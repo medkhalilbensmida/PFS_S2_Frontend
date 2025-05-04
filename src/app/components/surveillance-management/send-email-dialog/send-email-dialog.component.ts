@@ -2,10 +2,11 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { EnseignantDTO, NotificationEmailDTO, SurveillanceService } from '../../../services/surveillance.service';
+import { Enseignant, EnseignantDTO, NotificationEmailDTO, SurveillanceService } from '../../../services/surveillance.service';
 import { finalize } from 'rxjs/operators';
 import { MaterialModule } from '../../../material.module';
 import { CommonModule } from '@angular/common';
+
 @Component({
   selector: 'app-send-email-dialog',
   templateUrl: './send-email-dialog.component.html',
@@ -61,16 +62,15 @@ export class SendEmailDialogComponent implements OnInit {
         finalize(() => this.isLoading = false)
       )
       .subscribe({
-        next: (professors) => {
+        next: (professors: EnseignantDTO[]) => {
           this.professors = professors;
-          // Initialize selected professors if not sending to all
           if (!this.emailForm.get('sendToAll')?.value) {
             this.emailForm.get('selectedProfessors')?.setValue(
               professors.map(p => p.id)
             );
           }
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Failed to load professors', err);
           this.loadError = 'Failed to load professors';
           this.snackBar.open(this.loadError, 'Close', { duration: 5000 });
@@ -114,7 +114,7 @@ export class SendEmailDialogComponent implements OnInit {
             subject: this.getEmailSubject(formData.template),
             message: formData.template === 'custom' 
               ? formData.customMessage 
-              : "",
+              : this.getTemplateMessage(formData.template, prof),
             date: new Date(),
             template: formData.template,
             session: this.data.sessionId
@@ -122,7 +122,6 @@ export class SendEmailDialogComponent implements OnInit {
   
           const response = await this.surveillanceService.sendEmailDTO(request).toPromise();
           
-          // Check if response contains success message
           if (response && response.includes('Email sent successfully')) {
             successCount++;
           } else {
